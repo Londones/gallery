@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, Calendar, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { sampleArtworks } from '@/data/sampleArtworks';
 import ImagePreview from '@/components/ImagePreview';
 
@@ -70,11 +69,11 @@ const ArtworkDetail = () => {
 
   if (!artwork) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-light text-gray-900 mb-4">Artwork not found</h2>
+          <h2 className="text-2xl font-light text-white mb-4">Artwork not found</h2>
           <Link to="/">
-            <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50">
+            <Button variant="outline" className="border-gray-800 text-gray-300 bg-gray-900 hover:bg-gray-800">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Gallery
             </Button>
@@ -89,80 +88,74 @@ const ArtworkDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="container mx-auto px-4 py-6">
-          <Link to="/">
-            <Button variant="ghost" className="text-gray-700 hover:bg-gray-50">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Gallery
-            </Button>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-black">
+      {/* Minimal Header */}
+      <header className="absolute top-0 left-0 z-50 p-6">
+        <Link to="/">
+          <Button variant="ghost" className="text-white hover:bg-white/10 border-none">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </Link>
       </header>
 
-      {/* Artwork Display */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <Card className="bg-white/70 backdrop-blur-sm border-gray-100 overflow-hidden">
-            <CardContent className="p-0">
-              <div className="aspect-square md:aspect-video max-h-[70vh] overflow-hidden relative group">
-                <img
-                  src={artwork.imageUrl}
-                  alt={artwork.title}
-                  className="w-full h-full object-contain bg-white cursor-pointer transition-all duration-300"
-                  onClick={handleImageClick}
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <div className="bg-white/90 rounded-full p-4 transform scale-75 group-hover:scale-100 transition-transform duration-300">
-                    <Eye className="w-6 h-6 text-gray-700" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-8 space-y-6">
-                <div>
-                  <h1 className="text-4xl md:text-5xl font-light text-gray-900 mb-4 tracking-tight">
-                    {artwork.title}
-                  </h1>
-                  {artwork.description && (
-                    <p className="text-lg text-gray-700 leading-relaxed">
-                      {artwork.description}
-                    </p>
-                  )}
-                </div>
+      {/* Full Screen Layout */}
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        {/* Image Section */}
+        <div className="flex-1 relative group cursor-pointer" onClick={handleImageClick}>
+          <img
+            src={artwork.imageUrl}
+            alt={artwork.title}
+            className="w-full h-full object-contain bg-black"
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <div className="bg-white/10 backdrop-blur-sm rounded-full p-4 transform scale-75 group-hover:scale-100 transition-transform duration-300">
+              <Eye className="w-6 h-6 text-white" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Info Panel */}
+        <div className="w-full lg:w-96 bg-gray-950 p-8 lg:p-12 flex flex-col justify-center">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-light text-white mb-4 tracking-tight">
+                {artwork.title}
+              </h1>
+              {artwork.description && (
+                <p className="text-gray-300 leading-relaxed text-lg">
+                  {artwork.description}
+                </p>
+              )}
+            </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-6 border-t border-gray-100 space-y-4 sm:space-y-0">
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {new Date(artwork.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </div>
-
-                  {artwork.platformLink && (
-                    <a
-                      href={artwork.platformLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex"
-                    >
-                      <Button 
-                        variant="outline" 
-                        className="border-pink-200 text-pink-600 hover:bg-pink-50 hover:border-pink-300"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View on Platform
-                      </Button>
-                    </a>
-                  )}
-                </div>
+            <div className="space-y-4 pt-8 border-t border-gray-800">
+              <div className="flex items-center text-gray-400 text-sm">
+                <Calendar className="w-4 h-4 mr-3" />
+                {new Date(artwork.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
               </div>
-            </CardContent>
-          </Card>
+
+              {artwork.platformLink && (
+                <a
+                  href={artwork.platformLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex"
+                >
+                  <Button 
+                    variant="outline" 
+                    className="border-gray-700 text-gray-300 bg-transparent hover:bg-gray-800 hover:border-gray-600 mt-4"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View on Platform
+                  </Button>
+                </a>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
