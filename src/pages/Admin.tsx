@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Artwork {
   id: string;
-  title: string;
+  title: string;  
   description: string;
   imageUrl: string;
   platformLink?: string;
@@ -81,6 +81,12 @@ const Admin = () => {
           imageFile: null
         });
 
+        // Reset file input
+        const fileInput = document.getElementById('image') as HTMLInputElement;
+        if (fileInput) {
+          fileInput.value = '';
+        }
+
         toast({
           title: "Success!",
           description: "Artwork has been added to your gallery."
@@ -109,24 +115,24 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream-50 to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-amber-100">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link to="/">
-                <Button variant="ghost" size="sm" className="text-amber-700">
+                <Button variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-100">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Gallery
                 </Button>
               </Link>
-              <h1 className="text-2xl font-light text-amber-900">
+              <h1 className="text-2xl font-light text-gray-900">
                 Admin Panel
               </h1>
             </div>
             <Link to="/">
-              <Button variant="outline" size="sm" className="border-amber-200 text-amber-700">
+              <Button variant="outline" size="sm" className="border-gray-200 text-gray-700 hover:bg-gray-50">
                 <Eye className="w-4 h-4 mr-2" />
                 View Gallery
               </Button>
@@ -138,19 +144,19 @@ const Admin = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Upload Form */}
-          <Card className="bg-white/70 backdrop-blur-sm border-amber-100">
+          <Card className="bg-white/70 backdrop-blur-sm border-gray-100">
             <CardHeader>
-              <CardTitle className="text-amber-900 font-light text-xl">
+              <CardTitle className="text-gray-900 font-light text-xl">
                 Add New Artwork
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="image" className="text-amber-800">
+                  <Label htmlFor="image" className="text-gray-800">
                     Artwork Image *
                   </Label>
-                  <div className="border-2 border-dashed border-amber-200 rounded-lg p-6 text-center hover:border-amber-300 transition-colors">
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-pink-200 transition-colors">
                     <input
                       id="image"
                       type="file"
@@ -159,8 +165,8 @@ const Admin = () => {
                       className="hidden"
                     />
                     <label htmlFor="image" className="cursor-pointer">
-                      <Upload className="w-8 h-8 mx-auto mb-2 text-amber-400" />
-                      <p className="text-amber-600">
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-gray-600">
                         {formData.imageFile ? formData.imageFile.name : 'Click to upload image'}
                       </p>
                     </label>
@@ -168,7 +174,7 @@ const Admin = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-amber-800">
+                  <Label htmlFor="title" className="text-gray-800">
                     Title *
                   </Label>
                   <Input
@@ -176,12 +182,12 @@ const Admin = () => {
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Enter artwork title"
-                    className="border-amber-200 focus:border-amber-400"
+                    className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-amber-800">
+                  <Label htmlFor="description" className="text-gray-800">
                     Description
                   </Label>
                   <Textarea
@@ -190,12 +196,12 @@ const Admin = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Describe your artwork..."
                     rows={4}
-                    className="border-amber-200 focus:border-amber-400"
+                    className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="platform" className="text-amber-800">
+                  <Label htmlFor="platform" className="text-gray-800">
                     Platform Link (Optional)
                   </Label>
                   <Input
@@ -204,14 +210,14 @@ const Admin = () => {
                     value={formData.platformLink}
                     onChange={(e) => setFormData(prev => ({ ...prev, platformLink: e.target.value }))}
                     placeholder="https://instagram.com/p/..."
-                    className="border-amber-200 focus:border-amber-400"
+                    className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
                   />
                 </div>
 
                 <Button 
                   type="submit" 
                   disabled={isUploading}
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                  className="w-full bg-gray-900 hover:bg-gray-800 text-white"
                 >
                   {isUploading ? (
                     "Uploading..."
@@ -227,31 +233,31 @@ const Admin = () => {
           </Card>
 
           {/* Artwork Management */}
-          <Card className="bg-white/70 backdrop-blur-sm border-amber-100">
+          <Card className="bg-white/70 backdrop-blur-sm border-gray-100">
             <CardHeader>
-              <CardTitle className="text-amber-900 font-light text-xl">
+              <CardTitle className="text-gray-900 font-light text-xl">
                 Manage Artworks ({artworks.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {artworks.length === 0 ? (
-                  <p className="text-amber-600 text-center py-8">
+                  <p className="text-gray-600 text-center py-8">
                     No artworks uploaded yet.
                   </p>
                 ) : (
                   artworks.map((artwork) => (
-                    <div key={artwork.id} className="flex items-center space-x-4 p-3 bg-white/50 rounded-lg">
+                    <div key={artwork.id} className="flex items-center space-x-4 p-3 bg-white/50 rounded-lg border border-gray-100">
                       <img
                         src={artwork.imageUrl}
                         alt={artwork.title}
                         className="w-16 h-16 object-cover rounded-md"
                       />
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-amber-900 truncate">
+                        <h4 className="font-medium text-gray-900 truncate">
                           {artwork.title}
                         </h4>
-                        <p className="text-sm text-amber-600 truncate">
+                        <p className="text-sm text-gray-600 truncate">
                           {artwork.description || 'No description'}
                         </p>
                         {artwork.platformLink && (
@@ -259,7 +265,7 @@ const Admin = () => {
                             href={artwork.platformLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-amber-500 hover:text-amber-700 flex items-center mt-1"
+                            className="text-xs text-pink-400 hover:text-pink-500 flex items-center mt-1"
                           >
                             <ExternalLink className="w-3 h-3 mr-1" />
                             Platform
