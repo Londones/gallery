@@ -13,9 +13,10 @@ interface ImagePreviewProps {
 const ImagePreview = ({ src, alt, isOpen, onClose }: ImagePreviewProps) => {
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    // Only close if clicking the backdrop, not the image
-    if (e.target === e.currentTarget) {
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // Close if clicking anywhere except on the image
+    const target = e.target as HTMLElement;
+    if (target.tagName !== 'IMG') {
       onClose();
     }
   };
@@ -37,14 +38,13 @@ const ImagePreview = ({ src, alt, isOpen, onClose }: ImagePreviewProps) => {
       {/* Scrollable Content Area - clicking here closes the modal */}
       <div 
         className="flex-1 overflow-auto p-4 pt-0 cursor-pointer"
-        onClick={handleBackdropClick}
+        onClick={handleContainerClick}
       >
         <div className="flex items-center justify-center min-h-full">
           <img
             src={src}
             alt={alt}
             className="max-w-full h-auto object-contain rounded-lg cursor-default"
-            onClick={(e) => e.stopPropagation()}
           />
         </div>
       </div>
