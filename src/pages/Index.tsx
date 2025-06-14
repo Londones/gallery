@@ -49,12 +49,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-light text-gray-900 tracking-wide">
+            <h1 className="text-4xl md:text-5xl font-light text-black tracking-wide">
               Gallery
             </h1>
             <div className="w-16 h-px bg-pink-200 mx-auto mt-4"></div>
@@ -65,12 +65,12 @@ const Index = () => {
       {/* Hero Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto text-center max-w-3xl">
-          <h2 className="text-6xl md:text-8xl font-extralight text-gray-900 mb-8 tracking-tight leading-none">
+          <h2 className="text-6xl md:text-8xl font-extralight text-black mb-8 tracking-tight leading-none">
             Visual
             <br />
             <span className="text-gray-600">Stories</span>
           </h2>
-          <p className="text-xl text-gray-600 leading-relaxed">
+          <p className="text-xl text-gray-700 leading-relaxed">
             A curated collection of visual narratives, 
             each frame capturing a moment in time.
           </p>
@@ -89,7 +89,7 @@ const Index = () => {
               {artworks.map((artwork, index) => (
                 <Card 
                   key={artwork.id}
-                  className="group border-0 bg-white/70 backdrop-blur-sm hover:bg-white/90 transition-all duration-500 hover:shadow-xl hover:shadow-gray-200/20"
+                  className="group border border-gray-200 bg-white hover:bg-gray-50 transition-all duration-500 hover:shadow-lg hover:shadow-gray-200/50"
                   style={{
                     animationDelay: `${index * 100}ms`
                   }}
@@ -115,7 +115,7 @@ const Index = () => {
                     </div>
                     <div className="p-6 space-y-4">
                       <Link to={`/artwork/${artwork.id}`}>
-                        <h3 className="text-xl font-medium text-gray-900 group-hover:text-gray-700 transition-colors cursor-pointer">
+                        <h3 className="text-xl font-medium text-black group-hover:text-gray-700 transition-colors cursor-pointer">
                           {artwork.title}
                         </h3>
                       </Link>
