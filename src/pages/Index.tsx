@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Eye } from 'lucide-react';
@@ -85,21 +84,18 @@ const Index = () => {
               <p className="text-gray-500">Loading artworks...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 animate-stagger">
-              {artworks.map((artwork, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+              {artworks.map((artwork) => (
                 <Card 
                   key={artwork.id}
-                  className="group border border-gray-200 bg-white hover:bg-gray-50 transition-all duration-500 hover:shadow-lg hover:shadow-gray-200/50"
-                  style={{
-                    animationDelay: `${index * 100}ms`
-                  }}
+                  className="group border border-gray-200 bg-white hover:bg-gray-50 transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50"
                 >
                   <CardContent className="p-0">
                     <div className="aspect-square overflow-hidden rounded-t-lg relative">
                       <img
                         src={artwork.imageUrl}
                         alt={artwork.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 cursor-pointer"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
                         onClick={() => handleImageClick(artwork.imageUrl, artwork.title)}
                         onError={(e) => {
                           console.error('Image failed to load:', artwork.imageUrl);
