@@ -53,7 +53,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="w-full px-4 py-8 flex justify-center">
         {artworks.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-gray-500">Loading artworks...</p>
