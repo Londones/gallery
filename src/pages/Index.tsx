@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sampleArtworks } from '@/data/sampleArtworks';
 import ImagePreview from '@/components/ImagePreview';
 
@@ -15,6 +15,7 @@ interface Artwork {
 const Index = () => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('Loading artworks...');
@@ -45,61 +46,51 @@ const Index = () => {
     setPreviewImage({ src: imageUrl, alt: title });
   };
 
+  const handleArtworkClick = (artworkId: string) => {
+    navigate(`/artwork/${artworkId}`);
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-light text-black tracking-wide">
-              Gallery
-            </h1>
-            <div className="w-16 h-px bg-pink-200 mx-auto mt-4"></div>
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        {artworks.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-gray-500">Loading artworks...</p>
           </div>
-        </div>
-      </header>
-
-      {/* Masonry Gallery */}
-      <section className="p-4">
-        <div className="container mx-auto">
-          {artworks.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-gray-500">Loading artworks...</p>
-            </div>
-          ) : (
-            <div className="masonry-grid">
-              {artworks.map((artwork) => (
-                <div 
-                  key={artwork.id}
-                  className="masonry-item group relative cursor-pointer mb-4 break-inside-avoid"
-                  onClick={() => handleImageClick(artwork.imageUrl, artwork.title)}
-                >
-                  <img
-                    src={artwork.imageUrl}
-                    alt={artwork.title}
-                    className="w-full rounded-lg transition-all duration-300"
-                    onError={(e) => {
-                      console.error('Image failed to load:', artwork.imageUrl);
-                      console.error('Error:', e);
-                    }}
-                    onLoad={() => console.log('Image loaded successfully:', artwork.imageUrl)}
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <div className="text-center text-white p-6 max-w-full">
-                      <h3 className="text-xl font-medium mb-2 text-white">
-                        {artwork.title}
-                      </h3>
-                      <p className="text-sm text-white/90 leading-relaxed">
-                        {artwork.description}
-                      </p>
-                    </div>
+        ) : (
+          <div className="masonry-grid">
+            {artworks.map((artwork) => (
+              <div 
+                key={artwork.id}
+                className="masonry-item group relative cursor-pointer mb-4 break-inside-avoid"
+                onClick={() => handleArtworkClick(artwork.id)}
+              >
+                <img
+                  src={artwork.imageUrl}
+                  alt={artwork.title}
+                  className="w-full rounded-lg transition-all duration-300"
+                  onError={(e) => {
+                    console.error('Image failed to load:', artwork.imageUrl);
+                    console.error('Error:', e);
+                  }}
+                  onLoad={() => console.log('Image loaded successfully:', artwork.imageUrl)}
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <div className="text-center text-white p-6 max-w-full">
+                    <h3 className="text-xl font-medium mb-2 text-white">
+                      {artwork.title}
+                    </h3>
+                    <p className="text-sm text-white/90 leading-relaxed">
+                      {artwork.description}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
 
       <ImagePreview
         src={previewImage?.src || ''}
