@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sampleArtworks } from '@/data/sampleArtworks';
@@ -53,7 +54,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Main Content */}
-      <main className="w-full px-4 py-8 flex justify-center">
+      <main className="w-full px-4 py-8 text-center">
         {artworks.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-gray-500">Loading artworks...</p>
