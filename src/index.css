@@ -111,13 +111,13 @@
     width: 100%;
     max-width: 320px;
     margin: 0 auto;
+    display: block;
   }
 
   @media (min-width: 640px) {
     .masonry-grid {
       column-count: 2;
       max-width: 672px;
-      margin: 0 auto;
     }
   }
 
@@ -125,7 +125,6 @@
     .masonry-grid {
       column-count: 3;
       max-width: 1008px;
-      margin: 0 auto;
     }
   }
 
@@ -133,7 +132,6 @@
     .masonry-grid {
       column-count: 4;
       max-width: 1344px;
-      margin: 0 auto;
     }
   }
 
