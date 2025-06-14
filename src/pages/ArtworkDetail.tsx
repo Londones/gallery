@@ -88,7 +88,7 @@ const ArtworkDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-y-auto">
       {/* Minimal Header */}
       <header className="absolute top-0 left-0 z-50 p-8">
         <Link to="/">
@@ -101,12 +101,13 @@ const ArtworkDetail = () => {
       {/* Main Layout */}
       <div className="flex flex-col lg:flex-row min-h-screen pt-16 lg:pt-0">
         {/* Image Section */}
-        <div className="flex-1 flex items-center justify-center p-8 lg:p-16 cursor-pointer group" onClick={handleImageClick}>
-          <div className="relative max-w-full max-h-full">
+        <div className="flex-1 flex items-center justify-center p-8 lg:p-16 cursor-pointer group overflow-hidden" onClick={handleImageClick}>
+          <div className="relative w-full h-full flex items-center justify-center">
             <img
               src={artwork.imageUrl}
               alt={artwork.title}
-              className="max-w-full max-h-[80vh] object-contain shadow-sm group-hover:shadow-md transition-shadow duration-300"
+              className="max-w-full max-h-full object-contain shadow-sm group-hover:shadow-md transition-shadow duration-300"
+              style={{ maxHeight: 'calc(100vh - 8rem)' }}
             />
             <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
@@ -117,7 +118,7 @@ const ArtworkDetail = () => {
         </div>
         
         {/* Info Panel */}
-        <div className="w-full lg:w-80 bg-gray-50/30 p-8 lg:p-12 flex flex-col justify-center border-l border-gray-100">
+        <div className="w-full lg:w-80 bg-gray-50/30 p-8 lg:p-12 flex flex-col justify-center border-l border-gray-100 overflow-y-auto">
           <div className="space-y-8">
             <div className="space-y-4">
               <h1 className="text-2xl lg:text-3xl font-light text-gray-900 leading-tight">
