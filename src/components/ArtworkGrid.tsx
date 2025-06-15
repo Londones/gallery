@@ -57,7 +57,7 @@ const ArtworkGrid = ({ artworks, onArtworkClick }: ArtworkGridProps) => {
             key={columnIndex}
             className="masonry-column flex-1"
             animate={{
-              y: columnIndex % 2 === 0 ? [0, -2000, 0] : [0, 2000, 0]
+              y: columnIndex % 2 === 0 ? [0, -2000] : [-2000, 0]
             }}
             transition={{
               duration: 60,
