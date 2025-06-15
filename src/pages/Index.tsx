@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -86,7 +87,18 @@ const Index = () => {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: [0.6, -0.05, 0.01, 0.99]
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const emojiVariants = {
+    bounce: {
+      y: [0, -20, 0],
+      transition: {
+        duration: 0.6,
+        repeat: Infinity,
+        ease: "easeInOut"
       }
     }
   };
@@ -100,14 +112,7 @@ const Index = () => {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <motion.div 
-          className="text-center py-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <p className="text-gray-500">Loading artworks...</p>
-        </motion.div>
+        {/* Removed loading message */}
       </motion.div>
     );
   }
@@ -129,7 +134,19 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-gray-500">No artworks found matching "{searchQuery}".</p>
+            <div className="flex justify-center items-center space-x-2 text-4xl">
+              {['🎨', '✨', '🖼️', '💫', '🌸'].map((emoji, index) => (
+                <motion.span
+                  key={index}
+                  variants={emojiVariants}
+                  animate="bounce"
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {emoji}
+                </motion.span>
+              ))}
+            </div>
+            <p className="text-gray-400 mt-4 text-sm">No artworks found matching "{searchQuery}"</p>
           </motion.div>
         ) : filteredArtworks.length === 0 ? (
           <motion.div 
@@ -138,7 +155,19 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-gray-500">No artworks found.</p>
+            <div className="flex justify-center items-center space-x-2 text-4xl">
+              {['🎭', '🌈', '🎪', '🦋', '🌺'].map((emoji, index) => (
+                <motion.span
+                  key={index}
+                  variants={emojiVariants}
+                  animate="bounce"
+                  transition={{ delay: index * 0.15 }}
+                >
+                  {emoji}
+                </motion.span>
+              ))}
+            </div>
+            <p className="text-gray-400 mt-4 text-sm">Your gallery awaits its first masterpiece</p>
           </motion.div>
         ) : (
           <motion.div 
