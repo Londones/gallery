@@ -1,17 +1,19 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { sampleArtworks } from '@/data/sampleArtworks';
+import { Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 import ImagePreview from '@/components/ImagePreview';
 
 interface Artwork {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
-  platformLink?: string;
-  createdAt: string;
+  image_url: string;
+  platform_link?: string;
+  created_at: string;
 }
 
 const Index = () => {
@@ -21,32 +23,28 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('Loading artworks...');
-    console.log('Sample artworks:', sampleArtworks);
-    
-    // Load artworks from localStorage, fallback to sample data
-    const stored = localStorage.getItem('artworks');
-    if (stored) {
-      const storedArtworks = JSON.parse(stored);
-      console.log('Found stored artworks:', storedArtworks);
-      if (storedArtworks.length > 0) {
-        setArtworks(storedArtworks);
-      } else {
-        console.log('No stored artworks, using sample data');
-        setArtworks(sampleArtworks);
-      }
-    } else {
-      console.log('No localStorage data, using sample data');
-      setArtworks(sampleArtworks);
-    }
-    
-    // Set loading to false after artworks are set
-    setIsLoading(false);
+    fetchArtworks();
   }, []);
 
-  useEffect(() => {
-    console.log('Current artworks state:', artworks);
-  }, [artworks]);
+  const fetchArtworks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching artworks:', error);
+        return;
+      }
+
+      setArtworks(data || []);
+    } catch (error) {
+      console.error('Error fetching artworks:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleImageClick = (imageUrl: string, title: string) => {
     setPreviewImage({ src: imageUrl, alt: title });
@@ -79,7 +77,7 @@ const Index = () => {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
+        ease: [0.4, 0, 0.2, 1]
       }
     }
   };
@@ -113,6 +111,21 @@ const Index = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Header with Admin Link */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-light text-gray-900">Gallery</h1>
+            <Link to="/auth">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:bg-gray-100">
+                <Settings className="w-4 h-4 mr-2" />
+                Admin
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
       {/* Main Content */}
       <main className="w-full px-4 py-8 text-center">
         {artworks.length === 0 ? (
@@ -122,7 +135,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-gray-500">No artworks found...</p>
+            <p className="text-gray-500">No artworks found. Visit the admin panel to add some!</p>
           </motion.div>
         ) : (
           <motion.div 
@@ -131,7 +144,7 @@ const Index = () => {
             initial="hidden"
             animate="visible"
           >
-            {artworks.map((artwork, index) => (
+            {artworks.map((artwork) => (
               <motion.div 
                 key={artwork.id}
                 className="masonry-item group relative cursor-pointer mb-4 break-inside-avoid"
@@ -145,15 +158,15 @@ const Index = () => {
                 layoutId={`artwork-${artwork.id}`}
               >
                 <motion.img
-                  src={artwork.imageUrl}
+                  src={artwork.image_url}
                   alt={artwork.title}
                   className="w-full rounded-lg transition-all duration-300"
                   layoutId={`artwork-image-${artwork.id}`}
                   onError={(e) => {
-                    console.error('Image failed to load:', artwork.imageUrl);
+                    console.error('Image failed to load:', artwork.image_url);
                     console.error('Error:', e);
                   }}
-                  onLoad={() => console.log('Image loaded successfully:', artwork.imageUrl)}
+                  onLoad={() => console.log('Image loaded successfully:', artwork.image_url)}
                 />
                 <motion.div 
                   className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100"

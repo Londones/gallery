@@ -4,41 +4,50 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, Calendar, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { sampleArtworks } from '@/data/sampleArtworks';
+import { supabase } from '@/integrations/supabase/client';
 import ImagePreview from '@/components/ImagePreview';
 
 interface Artwork {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
-  platformLink?: string;
-  createdAt: string;
+  image_url: string;
+  platform_link?: string;
+  created_at: string;
 }
 
 const ArtworkDetail = () => {
   const { id } = useParams();
   const [artwork, setArtwork] = useState<Artwork | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('artworks');
-    if (stored && id) {
-      const artworks: Artwork[] = JSON.parse(stored);
-      const found = artworks.find(art => art.id === id);
-      if (found) {
-        setArtwork(found);
-      } else {
-        // Fallback to sample artworks
-        const sampleFound = sampleArtworks.find(art => art.id === id);
-        setArtwork(sampleFound || null);
-      }
-    } else if (id) {
-      // Use sample artworks if no stored artworks
-      const sampleFound = sampleArtworks.find(art => art.id === id);
-      setArtwork(sampleFound || null);
+    if (id) {
+      fetchArtwork(id);
     }
   }, [id]);
+
+  const fetchArtwork = async (artworkId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('*')
+        .eq('id', artworkId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching artwork:', error);
+        return;
+      }
+
+      setArtwork(data);
+    } catch (error) {
+      console.error('Error fetching artwork:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Update document head for dynamic open graph
@@ -58,15 +67,30 @@ const ArtworkDetail = () => {
 
       updateMetaTag('og:title', artwork.title);
       updateMetaTag('og:description', artwork.description || 'View this beautiful artwork');
-      updateMetaTag('og:image', artwork.imageUrl);
+      updateMetaTag('og:image', artwork.image_url);
       updateMetaTag('og:type', 'article');
       
       updateMetaTag('twitter:card', 'summary_large_image');
       updateMetaTag('twitter:title', artwork.title);
       updateMetaTag('twitter:description', artwork.description || 'View this beautiful artwork');
-      updateMetaTag('twitter:image', artwork.imageUrl);
+      updateMetaTag('twitter:image', artwork.image_url);
     }
   }, [artwork]);
+
+  if (isLoading) {
+    return (
+      <motion.div 
+        className="min-h-screen bg-white flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <div className="text-center">
+          <p className="text-gray-500">Loading artwork...</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   if (!artwork) {
     return (
@@ -90,7 +114,7 @@ const ArtworkDetail = () => {
   }
 
   const handleImageClick = () => {
-    setPreviewImage({ src: artwork.imageUrl, alt: artwork.title });
+    setPreviewImage({ src: artwork.image_url, alt: artwork.title });
   };
 
   return (
@@ -127,7 +151,7 @@ const ArtworkDetail = () => {
         >
           <div className="relative w-full h-full flex items-center justify-center">
             <motion.img
-              src={artwork.imageUrl}
+              src={artwork.image_url}
               alt={artwork.title}
               className="max-w-full max-h-full object-contain shadow-sm group-hover:shadow-md transition-shadow duration-300"
               style={{ maxHeight: 'calc(100vh - 8rem)' }}
@@ -179,16 +203,16 @@ const ArtworkDetail = () => {
             >
               <div className="flex items-center text-gray-500 text-sm">
                 <Calendar className="w-4 h-4 mr-3" />
-                {new Date(artwork.createdAt).toLocaleDateString('en-US', {
+                {new Date(artwork.created_at).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
                 })}
               </div>
 
-              {artwork.platformLink && (
+              {artwork.platform_link && (
                 <motion.a
-                  href={artwork.platformLink}
+                  href={artwork.platform_link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex"

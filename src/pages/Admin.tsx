@@ -1,24 +1,27 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, Save, Trash2, Eye, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Upload, Save, Trash2, Eye, ExternalLink, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Artwork {
   id: string;
   title: string;  
   description: string;
-  imageUrl: string;
-  platformLink?: string;
-  createdAt: string;
+  image_url: string;
+  platform_link?: string;
+  created_at: string;
 }
 
 const Admin = () => {
+  const { user, loading: authLoading, signOut } = useAuth();
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,17 +34,57 @@ const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const stored = localStorage.getItem('artworks');
-    if (stored) {
-      setArtworks(JSON.parse(stored));
+    if (!authLoading && !user) {
+      navigate('/auth');
     }
-  }, []);
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      fetchArtworks();
+    }
+  }, [user]);
+
+  const fetchArtworks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setArtworks(data || []);
+    } catch (error) {
+      console.error('Error fetching artworks:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load artworks.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData(prev => ({ ...prev, imageFile: file }));
     }
+  };
+
+  const uploadImageToStorage = async (file: File): Promise<string> => {
+    const fileName = `${Date.now()}-${file.name}`;
+    
+    const { data, error } = await supabase.storage
+      .from('artworks')
+      .upload(fileName, file);
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('artworks')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,45 +101,49 @@ const Admin = () => {
     setIsUploading(true);
 
     try {
-      // Convert image to base64 for storage
-      const reader = new FileReader();
-      reader.onload = () => {
-        const newArtwork: Artwork = {
-          id: Date.now().toString(),
+      // Upload image to Supabase storage
+      const imageUrl = await uploadImageToStorage(formData.imageFile);
+
+      // Insert artwork record
+      const { data, error } = await supabase
+        .from('artworks')
+        .insert({
           title: formData.title.trim(),
-          description: formData.description.trim(),
-          imageUrl: reader.result as string,
-          platformLink: formData.platformLink.trim() || undefined,
-          createdAt: new Date().toISOString()
-        };
+          description: formData.description.trim() || null,
+          image_url: imageUrl,
+          platform_link: formData.platformLink.trim() || null
+        })
+        .select()
+        .single();
 
-        const updatedArtworks = [newArtwork, ...artworks];
-        setArtworks(updatedArtworks);
-        localStorage.setItem('artworks', JSON.stringify(updatedArtworks));
+      if (error) throw error;
 
-        setFormData({
-          title: '',
-          description: '',
-          platformLink: '',
-          imageFile: null
-        });
+      // Update local state
+      setArtworks(prev => [data, ...prev]);
 
-        // Reset file input
-        const fileInput = document.getElementById('image') as HTMLInputElement;
-        if (fileInput) {
-          fileInput.value = '';
-        }
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        platformLink: '',
+        imageFile: null
+      });
 
-        toast({
-          title: "Success!",
-          description: "Artwork has been added to your gallery."
-        });
-      };
-      reader.readAsDataURL(formData.imageFile);
-    } catch (error) {
+      // Reset file input
+      const fileInput = document.getElementById('image') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
+
+      toast({
+        title: "Success!",
+        description: "Artwork has been added to your gallery."
+      });
+    } catch (error: any) {
+      console.error('Upload error:', error);
       toast({
         title: "Error",
-        description: "Failed to upload artwork. Please try again.",
+        description: error.message || "Failed to upload artwork. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -104,15 +151,65 @@ const Admin = () => {
     }
   };
 
-  const deleteArtwork = (id: string) => {
-    const updatedArtworks = artworks.filter(artwork => artwork.id !== id);
-    setArtworks(updatedArtworks);
-    localStorage.setItem('artworks', JSON.stringify(updatedArtworks));
-    toast({
-      title: "Deleted",
-      description: "Artwork has been removed from your gallery."
-    });
+  const deleteArtwork = async (artwork: Artwork) => {
+    try {
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from('artworks')
+        .delete()
+        .eq('id', artwork.id);
+
+      if (dbError) throw dbError;
+
+      // Try to delete from storage (but don't fail if it doesn't work)
+      try {
+        const fileName = artwork.image_url.split('/').pop();
+        if (fileName) {
+          await supabase.storage.from('artworks').remove([fileName]);
+        }
+      } catch (storageError) {
+        console.warn('Could not delete image from storage:', storageError);
+      }
+
+      // Update local state
+      setArtworks(prev => prev.filter(art => art.id !== artwork.id));
+      
+      toast({
+        title: "Deleted",
+        description: "Artwork has been removed from your gallery."
+      });
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete artwork.",
+        variant: "destructive"
+      });
+    }
   };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+        <div className="text-center py-16">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -131,12 +228,23 @@ const Admin = () => {
                 Admin Panel
               </h1>
             </div>
-            <Link to="/">
-              <Button variant="outline" size="sm" className="border-gray-200 text-gray-700 hover:bg-gray-50">
-                <Eye className="w-4 h-4 mr-2" />
-                View Gallery
+            <div className="flex items-center space-x-2">
+              <Link to="/">
+                <Button variant="outline" size="sm" className="border-gray-200 text-gray-700 hover:bg-gray-50">
+                  <Eye className="w-4 h-4 mr-2" />
+                  View Gallery
+                </Button>
+              </Link>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleSignOut}
+                className="text-gray-700 hover:bg-gray-100"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
               </Button>
-            </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -249,7 +357,7 @@ const Admin = () => {
                   artworks.map((artwork) => (
                     <div key={artwork.id} className="flex items-center space-x-4 p-3 bg-white/50 rounded-lg border border-gray-100">
                       <img
-                        src={artwork.imageUrl}
+                        src={artwork.image_url}
                         alt={artwork.title}
                         className="w-16 h-16 object-cover rounded-md"
                       />
@@ -260,9 +368,9 @@ const Admin = () => {
                         <p className="text-sm text-gray-600 truncate">
                           {artwork.description || 'No description'}
                         </p>
-                        {artwork.platformLink && (
+                        {artwork.platform_link && (
                           <a
-                            href={artwork.platformLink}
+                            href={artwork.platform_link}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-pink-400 hover:text-pink-500 flex items-center mt-1"
@@ -275,7 +383,7 @@ const Admin = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deleteArtwork(artwork.id)}
+                        onClick={() => deleteArtwork(artwork)}
                         className="text-red-500 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="w-4 h-4" />
