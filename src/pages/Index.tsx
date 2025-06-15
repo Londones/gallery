@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import ImagePreview from '@/components/ImagePreview';
+import SearchButton from '@/components/SearchButton';
 
 interface Artwork {
   id: string;
@@ -16,13 +17,27 @@ interface Artwork {
 
 const Index = () => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [filteredArtworks, setFilteredArtworks] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchArtworks();
   }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredArtworks(artworks);
+    } else {
+      const filtered = artworks.filter(artwork => 
+        artwork.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        artwork.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredArtworks(filtered);
+    }
+  }, [searchQuery, artworks]);
 
   const fetchArtworks = async () => {
     try {
@@ -37,6 +52,7 @@ const Index = () => {
       }
 
       setArtworks(data || []);
+      setFilteredArtworks(data || []);
     } catch (error) {
       console.error('Error fetching artworks:', error);
     } finally {
@@ -107,7 +123,16 @@ const Index = () => {
     >
       {/* Main Content */}
       <main className="w-full px-4 py-8 text-center">
-        {artworks.length === 0 ? (
+        {filteredArtworks.length === 0 && searchQuery ? (
+          <motion.div 
+            className="text-center py-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <p className="text-gray-500">No artworks found matching "{searchQuery}".</p>
+          </motion.div>
+        ) : filteredArtworks.length === 0 ? (
           <motion.div 
             className="text-center py-16"
             initial={{ opacity: 0, y: 20 }}
@@ -123,7 +148,7 @@ const Index = () => {
             initial="hidden"
             animate="visible"
           >
-            {artworks.map((artwork) => (
+            {filteredArtworks.map((artwork) => (
               <motion.div 
                 key={artwork.id}
                 className="masonry-item group relative cursor-pointer mb-4 break-inside-avoid"
@@ -166,6 +191,11 @@ const Index = () => {
           </motion.div>
         )}
       </main>
+
+      <SearchButton 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
       <ImagePreview
         src={previewImage?.src || ''}
