@@ -1,5 +1,6 @@
 
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import ArtworkCard from './ArtworkCard';
 
 interface Artwork {
@@ -17,50 +18,69 @@ interface ArtworkGridProps {
 }
 
 const ArtworkGrid = ({ artworks, onArtworkClick }: ArtworkGridProps) => {
-  // Duplicate artworks to ensure infinite scroll
-  const duplicatedArtworks = [...artworks, ...artworks, ...artworks];
-  
-  // Split artworks into columns based on current breakpoint
-  const getColumnsCount = () => {
-    if (typeof window === 'undefined') return 1;
-    if (window.innerWidth >= 1280) return 4;
-    if (window.innerWidth >= 1024) return 3;
-    if (window.innerWidth >= 640) return 2;
-    return 1;
-  };
+  const [columnsCount, setColumnsCount] = useState(1);
 
-  const columnsCount = getColumnsCount();
-  const columns: Artwork[][] = Array.from({ length: columnsCount }, () => []);
+  // Update columns count on window resize
+  useEffect(() => {
+    const updateColumnsCount = () => {
+      if (window.innerWidth >= 1280) setColumnsCount(4);
+      else if (window.innerWidth >= 1024) setColumnsCount(3);
+      else if (window.innerWidth >= 640) setColumnsCount(2);
+      else setColumnsCount(1);
+    };
+
+    updateColumnsCount();
+    window.addEventListener('resize', updateColumnsCount);
+    return () => window.removeEventListener('resize', updateColumnsCount);
+  }, []);
+
+  // Create enough duplicates to ensure continuous scrolling
+  const duplicatedArtworks = [...artworks, ...artworks, ...artworks, ...artworks];
   
   // Distribute artworks across columns
+  const columns: Artwork[][] = Array.from({ length: columnsCount }, () => []);
   duplicatedArtworks.forEach((artwork, index) => {
     columns[index % columnsCount].push(artwork);
   });
 
   return (
-    <div className="flex gap-4 justify-center max-w-7xl mx-auto overflow-hidden h-screen">
-      {columns.map((columnArtworks, columnIndex) => (
-        <motion.div
-          key={columnIndex}
-          className="flex flex-col gap-4 flex-1 max-w-80"
-          animate={{
-            y: columnIndex % 2 === 0 ? [0, -2000] : [0, 2000]
-          }}
-          transition={{
-            duration: 60,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        >
-          {columnArtworks.map((artwork, artworkIndex) => (
-            <ArtworkCard 
-              key={`${artwork.id}-${artworkIndex}`}
-              artwork={artwork}
-              onClick={onArtworkClick}
-            />
-          ))}
-        </motion.div>
-      ))}
+    <div className="relative w-full max-w-7xl mx-auto px-4 overflow-hidden" style={{ height: '100vh' }}>
+      {/* Top fade overlay */}
+      <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none" />
+      
+      {/* Bottom fade overlay */}
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
+      
+      <div className="masonry-container flex gap-4 h-full">
+        {columns.map((columnArtworks, columnIndex) => (
+          <motion.div
+            key={columnIndex}
+            className="masonry-column flex-1"
+            animate={{
+              y: columnIndex % 2 === 0 ? [0, -1000, 0] : [0, 1000, 0]
+            }}
+            transition={{
+              duration: 40,
+              repeat: Infinity,
+              ease: "linear",
+              repeatType: "loop"
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
+            }}
+          >
+            {columnArtworks.map((artwork, artworkIndex) => (
+              <ArtworkCard 
+                key={`${artwork.id}-${columnIndex}-${artworkIndex}`}
+                artwork={artwork}
+                onClick={onArtworkClick}
+              />
+            ))}
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 };

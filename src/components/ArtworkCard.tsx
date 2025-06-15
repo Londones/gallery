@@ -18,7 +18,7 @@ interface ArtworkCardProps {
 const ArtworkCard = ({ artwork, onClick }: ArtworkCardProps) => {
   return (
     <motion.div 
-      className="group relative cursor-pointer break-inside-avoid bg-white rounded-lg shadow-sm overflow-hidden"
+      className="group relative cursor-pointer break-inside-avoid bg-white rounded-lg shadow-sm overflow-hidden w-full"
       initial={{ 
         opacity: 0, 
         y: 30,
