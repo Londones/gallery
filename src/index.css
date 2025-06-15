@@ -105,30 +105,38 @@
     overflow: hidden;
   }
 
-  .masonry-container {
-    align-items: flex-start;
-  }
-
-  .masonry-column {
-    min-width: 0;
+  .masonry-grid {
+    column-count: 1;
+    column-gap: 1rem;
+    width: 100%;
     max-width: 320px;
+    margin: 0 auto;
+    display: block;
   }
 
   @media (min-width: 640px) {
-    .masonry-column {
-      max-width: 280px;
+    .masonry-grid {
+      column-count: 2;
+      max-width: 672px;
     }
   }
 
   @media (min-width: 1024px) {
-    .masonry-column {
-      max-width: 260px;
+    .masonry-grid {
+      column-count: 3;
+      max-width: 1008px;
     }
   }
 
   @media (min-width: 1280px) {
-    .masonry-column {
-      max-width: 240px;
+    .masonry-grid {
+      column-count: 4;
+      max-width: 1344px;
     }
+  }
+
+  .masonry-item {
+    display: inline-block;
+    width: 100%;
   }
 }

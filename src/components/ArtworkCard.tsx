@@ -18,7 +18,7 @@ interface ArtworkCardProps {
 const ArtworkCard = ({ artwork, onClick }: ArtworkCardProps) => {
   return (
     <motion.div 
-      className="group relative cursor-pointer break-inside-avoid bg-white rounded-lg shadow-sm overflow-hidden w-full"
+      className="masonry-item group relative cursor-pointer mb-4 break-inside-avoid"
       initial={{ 
         opacity: 0, 
         y: 30,
@@ -44,7 +44,7 @@ const ArtworkCard = ({ artwork, onClick }: ArtworkCardProps) => {
       <motion.img
         src={artwork.image_url}
         alt={artwork.title}
-        className="w-full h-auto transition-all duration-300"
+        className="w-full rounded-lg transition-all duration-300"
         layoutId={`artwork-image-${artwork.id}`}
         onError={(e) => {
           console.error('Image failed to load:', artwork.image_url);
@@ -53,7 +53,7 @@ const ArtworkCard = ({ artwork, onClick }: ArtworkCardProps) => {
         onLoad={() => console.log('Image loaded successfully:', artwork.image_url)}
       />
       <motion.div 
-        className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100"
+        className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100"
         initial={{ opacity: 0 }}
         whileHover={{ opacity: 1 }}
       >
