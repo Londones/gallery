@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, Save, Trash2, Eye, ExternalLink, LogOut, Edit2 } from 'lucide-react';
+import { ArrowLeft, Upload, Save, Trash2, Eye, ExternalLink, LogOut, Edit2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,7 @@ const Admin = () => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -39,6 +41,11 @@ const Admin = () => {
   });
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Update page title when component mounts
+    document.title = 'Admin Panel - Gallery';
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -84,6 +91,10 @@ const Admin = () => {
         });
         return;
       }
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
       setFormData(prev => ({ ...prev, imageFile: file }));
     }
   };
@@ -255,6 +266,12 @@ const Admin = () => {
       imageFile: null
     });
     setEditingArtwork(null);
+    
+    // Clear image preview
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview(null);
+    }
 
     // Reset file input
     const fileInput = document.getElementById('image') as HTMLInputElement;
@@ -271,6 +288,8 @@ const Admin = () => {
       platformLink: artwork.platform_link || '',
       imageFile: null
     });
+    // Set preview to existing artwork image
+    setImagePreview(artwork.image_url);
   };
 
   const cancelEditing = () => {
@@ -390,7 +409,7 @@ const Admin = () => {
                   <Label htmlFor="image" className="text-gray-800">
                     Artwork Image {!editingArtwork && '*'}
                   </Label>
-                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-pink-200 transition-colors">
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-pink-200 transition-colors relative">
                     <input
                       id="image"
                       type="file"
@@ -398,16 +417,48 @@ const Admin = () => {
                       onChange={handleImageUpload}
                       className="hidden"
                     />
-                    <label htmlFor="image" className="cursor-pointer">
-                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                      <p className="text-gray-600">
-                        {formData.imageFile ? formData.imageFile.name : 
-                         editingArtwork ? 'Click to replace image (optional)' : 'Click to upload image'}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        JPEG, PNG, WebP, GIF • Max 5MB
-                      </p>
-                    </label>
+                    
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="max-w-full max-h-48 mx-auto rounded-lg object-contain"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (imagePreview && imagePreview.startsWith('blob:')) {
+                              URL.revokeObjectURL(imagePreview);
+                            }
+                            setImagePreview(null);
+                            setFormData(prev => ({ ...prev, imageFile: null }));
+                            const fileInput = document.getElementById('image') as HTMLInputElement;
+                            if (fileInput) fileInput.value = '';
+                          }}
+                          className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-600 rounded-full p-1"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                        <label htmlFor="image" className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/0 hover:bg-black/10 transition-colors rounded-lg">
+                          <span className="text-white bg-black/50 px-3 py-1 rounded-full text-sm opacity-0 hover:opacity-100 transition-opacity">
+                            Change Image
+                          </span>
+                        </label>
+                      </div>
+                    ) : (
+                      <label htmlFor="image" className="cursor-pointer">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-gray-600">
+                          Click to upload image
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          JPEG, PNG, WebP, GIF • Max 5MB
+                        </p>
+                      </label>
+                    )}
                   </div>
                 </div>
 
@@ -489,14 +540,14 @@ const Admin = () => {
           </Card>
 
           {/* Artwork Management */}
-          <Card className="bg-white/70 backdrop-blur-sm border-gray-100">
-            <CardHeader>
+          <Card className="bg-white/70 backdrop-blur-sm border-gray-100 flex flex-col">
+            <CardHeader className="flex-shrink-0">
               <CardTitle className="text-gray-900 font-light text-xl">
                 Manage Artworks ({artworks.length})
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+            <CardContent className="flex-1 flex flex-col min-h-0">
+              <div className="space-y-4 flex-1 overflow-y-auto">
                 {artworks.length === 0 ? (
                   <p className="text-gray-600 text-center py-8">
                     No artworks uploaded yet.
