@@ -8,17 +8,17 @@ interface EmptyStateProps {
 const EmptyState = ({ searchQuery }: EmptyStateProps) => {
   const emojiVariants = {
     bounce: {
-      y: [0, -20, 0],
+      y: [0, -8, 0],
       transition: {
         duration: 0.6,
         repeat: Infinity,
-        ease: [0.4, 0, 0.6, 1]
+        ease: "easeInOut"
       }
     }
   };
 
-  const searchEmojis = ['🎨', '✨', '🖼️', '💫', '🌸'];
-  const emptyEmojis = ['🎭', '🌈', '🎪', '🦋', '🌺'];
+  const searchEmojis = ['🌸', '💖', '🎀'];
+  const emptyEmojis = ['🌺', '💕', '🌷'];
   
   const emojis = searchQuery ? searchEmojis : emptyEmojis;
   const message = searchQuery 
@@ -32,13 +32,13 @@ const EmptyState = ({ searchQuery }: EmptyStateProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex justify-center items-center space-x-2 text-4xl">
+      <div className="flex justify-center items-center space-x-1 text-2xl">
         {emojis.map((emoji, index) => (
           <motion.span
             key={index}
             variants={emojiVariants}
             animate="bounce"
-            transition={{ delay: index * (searchQuery ? 0.1 : 0.15) }}
+            transition={{ delay: index * 0.2 }}
           >
             {emoji}
           </motion.span>
