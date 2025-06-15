@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -110,11 +109,7 @@ const Admin = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {editingArtwork && (
-            <ArtworkPreview artwork={editingArtwork} />
-          )}
-          
-          <div className={editingArtwork ? "lg:col-span-1" : "lg:col-span-2"}>
+          <div className="lg:col-span-2">
             <ArtworkForm 
               editingArtwork={editingArtwork}
               onArtworkSaved={handleArtworkSaved}
@@ -122,7 +117,7 @@ const Admin = () => {
             />
           </div>
           
-          <div className={editingArtwork ? "lg:col-span-1" : "lg:col-span-1"}>
+          <div className="lg:col-span-1">
             <ArtworkManagement 
               artworks={artworks}
               onEditArtwork={handleEditArtwork}
