@@ -71,7 +71,7 @@ const Index = () => {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: [0.4, 0, 0.2, 1]
+        ease: "easeOut"
       }
     }
   };
@@ -107,10 +107,6 @@ const Index = () => {
     >
       {/* Main Content */}
       <main className="w-full px-4 py-8 text-center">
-        <div className="mb-8">
-          <h1 className="text-4xl font-light text-gray-900 mb-2">Gallery</h1>
-        </div>
-        
         {artworks.length === 0 ? (
           <motion.div 
             className="text-center py-16"
