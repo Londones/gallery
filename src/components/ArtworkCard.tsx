@@ -13,26 +13,39 @@ interface Artwork {
 interface ArtworkCardProps {
   artwork: Artwork;
   onClick: (artworkId: string) => void;
-  isDuplicate?: boolean;
 }
 
-const ArtworkCard = ({ artwork, onClick, isDuplicate = false }: ArtworkCardProps) => {
+const ArtworkCard = ({ artwork, onClick }: ArtworkCardProps) => {
   return (
     <motion.div 
-      className="group relative cursor-pointer"
+      className="masonry-item group relative cursor-pointer mb-4 break-inside-avoid"
+      initial={{ 
+        opacity: 0, 
+        y: 30,
+        scale: 0.95
+      }}
+      animate={{ 
+        opacity: 1, 
+        y: 0,
+        scale: 1
+      }}
+      transition={{
+        duration: 0.6,
+        ease: "easeOut"
+      }}
       whileHover={{ 
         scale: 1.02,
         transition: { duration: 0.2 }
       }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onClick(artwork.id)}
-      layoutId={!isDuplicate ? `artwork-${artwork.id}` : undefined}
+      layoutId={`artwork-${artwork.id}`}
     >
       <motion.img
         src={artwork.image_url}
         alt={artwork.title}
         className="w-full rounded-lg transition-all duration-300"
-        layoutId={!isDuplicate ? `artwork-image-${artwork.id}` : undefined}
+        layoutId={`artwork-image-${artwork.id}`}
         onError={(e) => {
           console.error('Image failed to load:', artwork.image_url);
           console.error('Error:', e);
