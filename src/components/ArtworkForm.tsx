@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +42,27 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
     imageFile: null as File | null
   });
   const { toast } = useToast();
+
+  // Update form data when editingArtwork changes
+  useEffect(() => {
+    if (editingArtwork) {
+      setFormData({
+        title: editingArtwork.title,
+        description: editingArtwork.description || '',
+        platformLink: editingArtwork.platform_link || '',
+        imageFile: null
+      });
+      setImagePreview(editingArtwork.image_url);
+    } else {
+      setFormData({
+        title: '',
+        description: '',
+        platformLink: '',
+        imageFile: null
+      });
+      setImagePreview(null);
+    }
+  }, [editingArtwork]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
