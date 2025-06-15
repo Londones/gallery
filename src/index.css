@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -105,38 +104,44 @@
     overflow: hidden;
   }
 
-  .masonry-grid {
-    column-count: 1;
-    column-gap: 1rem;
+  .scrolling-grid {
+    display: flex;
+    gap: 1rem;
     width: 100%;
-    max-width: 320px;
+    max-width: 1344px;
     margin: 0 auto;
-    display: block;
   }
 
-  @media (min-width: 640px) {
-    .masonry-grid {
-      column-count: 2;
-      max-width: 672px;
+  .scrolling-column {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    height: 85vh;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+  }
+
+  .scrolling-column-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  @keyframes scroll-up {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-50%);
     }
   }
 
-  @media (min-width: 1024px) {
-    .masonry-grid {
-      column-count: 3;
-      max-width: 1008px;
+  @keyframes scroll-down {
+    from {
+      transform: translateY(-50%);
     }
-  }
-
-  @media (min-width: 1280px) {
-    .masonry-grid {
-      column-count: 4;
-      max-width: 1344px;
+    to {
+      transform: translateY(0);
     }
-  }
-
-  .masonry-item {
-    display: inline-block;
-    width: 100%;
   }
 }
