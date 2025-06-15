@@ -30,7 +30,7 @@ const SearchButton = ({ searchQuery, onSearchChange }: SearchButtonProps) => {
           <motion.button
             key="search-button"
             onClick={handleToggle}
-            className="bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:shadow-xl transition-shadow duration-200"
+            className="bg-white text-gray-800 rounded-full p-4 shadow-lg hover:shadow-xl transition-shadow duration-200 border border-gray-200"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
