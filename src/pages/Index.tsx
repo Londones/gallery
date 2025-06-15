@@ -71,7 +71,7 @@ const Index = () => {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: "easeOut"
+        ease: [0.4, 0, 0.2, 1]
       }
     }
   };
@@ -105,17 +105,12 @@ const Index = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-center items-center">
-            <h1 className="text-2xl font-light text-gray-900">Gallery</h1>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="w-full px-4 py-8 text-center">
+        <div className="mb-8">
+          <h1 className="text-4xl font-light text-gray-900 mb-2">Gallery</h1>
+        </div>
+        
         {artworks.length === 0 ? (
           <motion.div 
             className="text-center py-16"

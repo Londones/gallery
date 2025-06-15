@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, Save, Trash2, Eye, ExternalLink, LogOut } from 'lucide-react';
+import { ArrowLeft, Upload, Save, Trash2, Eye, ExternalLink, LogOut, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ const Admin = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -89,66 +90,144 @@ const Admin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.imageFile || !formData.title.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide both a title and an image.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      // Upload image to Supabase storage
-      const imageUrl = await uploadImageToStorage(formData.imageFile);
-
-      // Insert artwork record
-      const { data, error } = await supabase
-        .from('artworks')
-        .insert({
-          title: formData.title.trim(),
-          description: formData.description.trim() || null,
-          image_url: imageUrl,
-          platform_link: formData.platformLink.trim() || null
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update local state
-      setArtworks(prev => [data, ...prev]);
-
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        platformLink: '',
-        imageFile: null
-      });
-
-      // Reset file input
-      const fileInput = document.getElementById('image') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
+    
+    if (editingArtwork) {
+      // Update existing artwork
+      if (!formData.title.trim()) {
+        toast({
+          title: "Error",
+          description: "Please provide a title.",
+          variant: "destructive"
+        });
+        return;
       }
 
-      toast({
-        title: "Success!",
-        description: "Artwork has been added to your gallery."
-      });
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to upload artwork. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsUploading(false);
+      setIsUploading(true);
+
+      try {
+        let imageUrl = editingArtwork.image_url;
+        
+        // Upload new image if provided
+        if (formData.imageFile) {
+          imageUrl = await uploadImageToStorage(formData.imageFile);
+        }
+
+        const { data, error } = await supabase
+          .from('artworks')
+          .update({
+            title: formData.title.trim(),
+            description: formData.description.trim() || null,
+            image_url: imageUrl,
+            platform_link: formData.platformLink.trim() || null
+          })
+          .eq('id', editingArtwork.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Update local state
+        setArtworks(prev => prev.map(art => art.id === editingArtwork.id ? data : art));
+        
+        // Reset form
+        resetForm();
+
+        toast({
+          title: "Success!",
+          description: "Artwork has been updated."
+        });
+      } catch (error: any) {
+        console.error('Update error:', error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update artwork. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsUploading(false);
+      }
+    } else {
+      // Create new artwork
+      if (!formData.imageFile || !formData.title.trim()) {
+        toast({
+          title: "Error",
+          description: "Please provide both a title and an image.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setIsUploading(true);
+
+      try {
+        // Upload image to Supabase storage
+        const imageUrl = await uploadImageToStorage(formData.imageFile);
+
+        // Insert artwork record
+        const { data, error } = await supabase
+          .from('artworks')
+          .insert({
+            title: formData.title.trim(),
+            description: formData.description.trim() || null,
+            image_url: imageUrl,
+            platform_link: formData.platformLink.trim() || null
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Update local state
+        setArtworks(prev => [data, ...prev]);
+
+        // Reset form
+        resetForm();
+
+        toast({
+          title: "Success!",
+          description: "Artwork has been added to your gallery."
+        });
+      } catch (error: any) {
+        console.error('Upload error:', error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to upload artwork. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsUploading(false);
+      }
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      platformLink: '',
+      imageFile: null
+    });
+    setEditingArtwork(null);
+
+    // Reset file input
+    const fileInput = document.getElementById('image') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const startEditing = (artwork: Artwork) => {
+    setEditingArtwork(artwork);
+    setFormData({
+      title: artwork.title,
+      description: artwork.description || '',
+      platformLink: artwork.platform_link || '',
+      imageFile: null
+    });
+  };
+
+  const cancelEditing = () => {
+    resetForm();
   };
 
   const deleteArtwork = async (artwork: Artwork) => {
@@ -251,18 +330,18 @@ const Admin = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload Form */}
+          {/* Upload/Edit Form */}
           <Card className="bg-white/70 backdrop-blur-sm border-gray-100">
             <CardHeader>
               <CardTitle className="text-gray-900 font-light text-xl">
-                Add New Artwork
+                {editingArtwork ? 'Edit Artwork' : 'Add New Artwork'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="image" className="text-gray-800">
-                    Artwork Image *
+                    Artwork Image {!editingArtwork && '*'}
                   </Label>
                   <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-pink-200 transition-colors">
                     <input
@@ -275,7 +354,8 @@ const Admin = () => {
                     <label htmlFor="image" className="cursor-pointer">
                       <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                       <p className="text-gray-600">
-                        {formData.imageFile ? formData.imageFile.name : 'Click to upload image'}
+                        {formData.imageFile ? formData.imageFile.name : 
+                         editingArtwork ? 'Click to replace image (optional)' : 'Click to upload image'}
                       </p>
                     </label>
                   </div>
@@ -322,20 +402,33 @@ const Admin = () => {
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={isUploading}
-                  className="w-full bg-gray-900 hover:bg-gray-800 text-white"
-                >
-                  {isUploading ? (
-                    "Uploading..."
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Add Artwork
-                    </>
+                <div className="flex space-x-3">
+                  <Button 
+                    type="submit" 
+                    disabled={isUploading}
+                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
+                  >
+                    {isUploading ? (
+                      "Saving..."
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        {editingArtwork ? 'Update Artwork' : 'Add Artwork'}
+                      </>
+                    )}
+                  </Button>
+                  
+                  {editingArtwork && (
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={cancelEditing}
+                      className="border-gray-200 text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </Button>
                   )}
-                </Button>
+                </div>
               </form>
             </CardContent>
           </Card>
@@ -380,14 +473,24 @@ const Admin = () => {
                           </a>
                         )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteArtwork(artwork)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditing(artwork)}
+                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteArtwork(artwork)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))
                 )}
