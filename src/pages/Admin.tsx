@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import AdminHeader from '@/components/AdminHeader';
 import ArtworkForm from '@/components/ArtworkForm';
 import ArtworkManagement from '@/components/ArtworkManagement';
+import ArtworkPreview from '@/components/ArtworkPreview';
 
 interface Artwork {
   id: string;
@@ -108,18 +109,26 @@ const Admin = () => {
       <AdminHeader onSignOut={handleSignOut} />
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <ArtworkForm 
-            editingArtwork={editingArtwork}
-            onArtworkSaved={handleArtworkSaved}
-            onEditingCancelled={handleEditingCancelled}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {editingArtwork && (
+            <ArtworkPreview artwork={editingArtwork} />
+          )}
           
-          <ArtworkManagement 
-            artworks={artworks}
-            onEditArtwork={handleEditArtwork}
-            onArtworkDeleted={handleArtworkDeleted}
-          />
+          <div className={editingArtwork ? "lg:col-span-1" : "lg:col-span-2"}>
+            <ArtworkForm 
+              editingArtwork={editingArtwork}
+              onArtworkSaved={handleArtworkSaved}
+              onEditingCancelled={handleEditingCancelled}
+            />
+          </div>
+          
+          <div className={editingArtwork ? "lg:col-span-1" : "lg:col-span-1"}>
+            <ArtworkManagement 
+              artworks={artworks}
+              onEditArtwork={handleEditArtwork}
+              onArtworkDeleted={handleArtworkDeleted}
+            />
+          </div>
         </div>
       </div>
     </div>
