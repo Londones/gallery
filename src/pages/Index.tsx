@@ -1,9 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Settings } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import ImagePreview from '@/components/ImagePreview';
 
@@ -46,10 +44,6 @@ const Index = () => {
     }
   };
 
-  const handleImageClick = (imageUrl: string, title: string) => {
-    setPreviewImage({ src: imageUrl, alt: title });
-  };
-
   const handleArtworkClick = (artworkId: string) => {
     navigate(`/artwork/${artworkId}`);
   };
@@ -77,7 +71,7 @@ const Index = () => {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: [0.4, 0, 0.2, 1]
+        ease: "easeOut"
       }
     }
   };
@@ -111,17 +105,11 @@ const Index = () => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Header with Admin Link */}
+      {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-center items-center">
             <h1 className="text-2xl font-light text-gray-900">Gallery</h1>
-            <Link to="/auth">
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:bg-gray-100">
-                <Settings className="w-4 h-4 mr-2" />
-                Admin
-              </Button>
-            </Link>
           </div>
         </div>
       </header>
@@ -135,7 +123,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-gray-500">No artworks found. Visit the admin panel to add some!</p>
+            <p className="text-gray-500">No artworks found.</p>
           </motion.div>
         ) : (
           <motion.div 

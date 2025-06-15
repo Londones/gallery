@@ -15,7 +15,6 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -41,27 +40,12 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/admin`
-          }
-        });
-        if (error) throw error;
-        toast({
-          title: "Success!",
-          description: "Check your email to confirm your account."
-        });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        if (error) throw error;
-        navigate('/admin');
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) throw error;
+      navigate('/admin');
     } catch (error: any) {
       toast({
         title: "Authentication Error",
@@ -97,7 +81,7 @@ const Auth = () => {
                 <Lock className="w-6 h-6 text-white" />
               </div>
               <CardTitle className="text-2xl font-light text-gray-900">
-                {isSignUp ? 'Create Admin Account' : 'Admin Login'}
+                Admin Login
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -133,18 +117,8 @@ const Auth = () => {
                   disabled={isLoading}
                   className="w-full bg-gray-900 hover:bg-gray-800 text-white"
                 >
-                  {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
+                  {isLoading ? 'Please wait...' : 'Sign In'}
                 </Button>
-
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => setIsSignUp(!isSignUp)}
-                    className="text-sm text-gray-600 hover:text-gray-800"
-                  >
-                    {isSignUp ? 'Already have an account? Sign in' : 'Need to create an account? Sign up'}
-                  </button>
-                </div>
               </form>
             </CardContent>
           </Card>
