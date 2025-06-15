@@ -34,7 +34,7 @@ const Index = () => {
 
   useEffect(() => {
     const title = 'Art Gallery';
-    const description = 'A showcase of artistic expressions, each piece telling its own unique story.';
+    const description = 'My art gallery';
 
     document.title = title;
     updateMetaTag('property', 'og:title', title);
