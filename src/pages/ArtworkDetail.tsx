@@ -50,30 +50,32 @@ const ArtworkDetail = () => {
   };
 
   useEffect(() => {
-    // Update document head for dynamic open graph
+    const updateMetaTag = (attribute: 'name' | 'property', value: string, content: string) => {
+      let meta = document.querySelector(`meta[${attribute}="${value}"]`) as HTMLMetaElement;
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute(attribute, value);
+        document.head.appendChild(meta);
+      }
+      meta.content = content;
+    };
+    
     if (artwork) {
-      document.title = `${artwork.title} - Gallery`;
+      document.title = `${artwork.title} - Art Gallery`;
       
-      // Update meta tags
-      const updateMetaTag = (property: string, content: string) => {
-        let meta = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
-        if (!meta) {
-          meta = document.createElement('meta');
-          meta.setAttribute('property', property);
-          document.head.appendChild(meta);
-        }
-        meta.content = content;
-      };
+      const description = artwork.description || 'View this beautiful artwork';
 
-      updateMetaTag('og:title', artwork.title);
-      updateMetaTag('og:description', artwork.description || 'View this beautiful artwork');
-      updateMetaTag('og:image', artwork.image_url);
-      updateMetaTag('og:type', 'article');
+      // Update OG tags
+      updateMetaTag('property', 'og:title', artwork.title);
+      updateMetaTag('property', 'og:description', description);
+      updateMetaTag('property', 'og:image', artwork.image_url);
+      updateMetaTag('property', 'og:type', 'article');
       
-      updateMetaTag('twitter:card', 'summary_large_image');
-      updateMetaTag('twitter:title', artwork.title);
-      updateMetaTag('twitter:description', artwork.description || 'View this beautiful artwork');
-      updateMetaTag('twitter:image', artwork.image_url);
+      // Update Twitter tags
+      updateMetaTag('name', 'twitter:card', 'summary_large_image');
+      updateMetaTag('name', 'twitter:title', artwork.title);
+      updateMetaTag('name', 'twitter:description', description);
+      updateMetaTag('name', 'twitter:image', artwork.image_url);
     }
   }, [artwork]);
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -23,13 +22,37 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  const updateMetaTag = (attribute: 'name' | 'property', value: string, content: string) => {
+    let meta = document.querySelector(`meta[${attribute}="${value}"]`) as HTMLMetaElement;
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute(attribute, value);
+      document.head.appendChild(meta);
+    }
+    meta.content = content;
+  };
+
   useEffect(() => {
-    document.title = 'Gallery';
+    const title = 'Art Gallery';
+    const description = 'A showcase of artistic expressions, each piece telling its own unique story.';
+
+    document.title = title;
+    updateMetaTag('property', 'og:title', title);
+    updateMetaTag('name', 'twitter:title', title);
+    updateMetaTag('property', 'og:description', description);
+    updateMetaTag('name', 'twitter:description', description);
+    updateMetaTag('property', 'og:type', 'website');
+    
+    fetchArtworks();
   }, []);
 
   useEffect(() => {
-    fetchArtworks();
-  }, []);
+    if (artworks.length > 0) {
+      const latestArtwork = artworks[0];
+      updateMetaTag('property', 'og:image', latestArtwork.image_url);
+      updateMetaTag('name', 'twitter:image', latestArtwork.image_url);
+    }
+  }, [artworks]);
 
   useEffect(() => {
     if (searchQuery.trim()) {
