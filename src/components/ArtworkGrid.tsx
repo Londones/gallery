@@ -38,7 +38,7 @@ const ArtworkGrid = ({ artworks, onArtworkClick }: ArtworkGridProps) => {
       y: 0,
       transition: {
         duration: 0.8,
-        ease: "easeOut",
+        ease: [0.25, 0.46, 0.45, 0.94],
         delay: columnIndex * 0.15
       }
     }
@@ -63,7 +63,7 @@ const ArtworkGrid = ({ artworks, onArtworkClick }: ArtworkGridProps) => {
 
   return (
     <motion.div 
-      className="masonry-grid-animated"
+      className="masonry-grid"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -71,7 +71,7 @@ const ArtworkGrid = ({ artworks, onArtworkClick }: ArtworkGridProps) => {
       {columns.map((columnArtworks, columnIndex) => (
         <motion.div
           key={columnIndex}
-          className="masonry-column"
+          className={`masonry-column ${columnIndex % 2 === 0 ? 'scroll-down' : 'scroll-up'}`}
           variants={getColumnVariants(columnIndex)}
         >
           {columnArtworks.map((artwork) => (
