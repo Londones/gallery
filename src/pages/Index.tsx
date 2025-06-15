@@ -78,10 +78,32 @@ const Index = () => {
       y: 0,
       scale: 1,
       transition: {
-        duration: 0.6
+        duration: 0.6,
+        ease: "easeOut"
       }
     }
   };
+
+  if (isLoading) {
+    return (
+      <motion.div 
+        className="min-h-screen bg-white flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.div 
+          className="text-center py-16"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <p className="text-gray-500">Loading artworks...</p>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div 
@@ -93,14 +115,14 @@ const Index = () => {
     >
       {/* Main Content */}
       <main className="w-full px-4 py-8 text-center">
-        {isLoading || artworks.length === 0 ? (
+        {artworks.length === 0 ? (
           <motion.div 
             className="text-center py-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-gray-500">Loading artworks...</p>
+            <p className="text-gray-500">No artworks found...</p>
           </motion.div>
         ) : (
           <motion.div 
