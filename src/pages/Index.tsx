@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import ArtworkGrid from '@/components/ArtworkGrid';
 import EmptyState from '@/components/EmptyState';
 import SearchButton from '@/components/SearchButton';
+import ArtworkGridSkeleton from '@/components/ArtworkGridSkeleton';
 
 interface Artwork {
   id: string;
@@ -86,15 +87,6 @@ const Index = () => {
     navigate(`/artwork/${artworkId}`);
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-        <div className="text-center py-16">
-        </div>
-      </div>
-    );
-  }
-
   return (
     <motion.div 
       className="min-h-screen bg-gradient-to-br from-gray-50 to-white"
@@ -105,7 +97,9 @@ const Index = () => {
     >
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {filteredArtworks.length === 0 ? (
+        {isLoading ? (
+          <ArtworkGridSkeleton />
+        ) : filteredArtworks.length === 0 ? (
           <EmptyState searchQuery={searchQuery} />
         ) : (
           <ArtworkGrid 

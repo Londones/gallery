@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, Calendar, Eye } from 'lucide-react';
@@ -6,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import ImagePreview from '@/components/ImagePreview';
+import ArtworkDetailSkeleton from '@/components/ArtworkDetailSkeleton';
 
 interface Artwork {
   id: string;
@@ -80,18 +80,7 @@ const ArtworkDetail = () => {
   }, [artwork]);
 
   if (isLoading) {
-    return (
-      <motion.div 
-        className="min-h-screen bg-white flex items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <div className="text-center">
-          <p className="text-gray-500">Loading artwork...</p>
-        </div>
-      </motion.div>
-    );
+    return <ArtworkDetailSkeleton />;
   }
 
   if (!artwork) {
