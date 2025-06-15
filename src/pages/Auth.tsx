@@ -2,18 +2,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lock, ArrowLeft } from 'lucide-react';
+import { Github, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 
 const Auth = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -35,24 +31,24 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGitHubAuth = async () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/admin`
+        }
       });
+      
       if (error) throw error;
-      navigate('/admin');
     } catch (error: any) {
       toast({
         title: "Authentication Error",
         description: error.message,
         variant: "destructive"
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -76,50 +72,20 @@ const Auth = () => {
           </Link>
           
           <Card className="bg-white/80 backdrop-blur-sm border-gray-100">
-            <CardHeader className="text-center">
+            <CardHeader className="text-center pb-6">
               <div className="mx-auto w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center mb-4">
-                <Lock className="w-6 h-6 text-white" />
+                <Github className="w-6 h-6 text-white" />
               </div>
-              <CardTitle className="text-2xl font-light text-gray-900">
-                Admin Login
-              </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleAuth} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-800">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@example.com"
-                    required
-                    className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-800">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
-                  />
-                </div>
-
-                <Button 
-                  type="submit" 
-                  disabled={isLoading}
-                  className="w-full bg-gray-900 hover:bg-gray-800 text-white"
-                >
-                  {isLoading ? 'Please wait...' : 'Sign In'}
-                </Button>
-              </form>
+              <Button 
+                onClick={handleGitHubAuth}
+                disabled={isLoading}
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+              >
+                <Github className="w-4 h-4 mr-2" />
+                {isLoading ? 'Connecting...' : 'Continue with GitHub'}
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
