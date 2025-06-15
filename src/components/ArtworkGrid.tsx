@@ -51,11 +51,11 @@ const ArtworkGrid = ({ artworks, onArtworkClick }: ArtworkGridProps) => {
       {/* Bottom fade overlay */}
       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent z-10 pointer-events-none" />
       
-      <div className="flex gap-4 h-full items-start">
+      <div className="masonry-container flex gap-4 h-full">
         {columns.map((columnArtworks, columnIndex) => (
           <motion.div
             key={columnIndex}
-            className="flex-1 flex flex-col gap-4"
+            className="masonry-column flex-1"
             animate={{
               y: columnIndex % 2 === 0 ? [0, -2000, 0] : [0, 2000, 0]
             }}
@@ -64,6 +64,11 @@ const ArtworkGrid = ({ artworks, onArtworkClick }: ArtworkGridProps) => {
               repeat: Infinity,
               ease: "linear",
               repeatType: "loop"
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem'
             }}
           >
             {columnArtworks.map((artwork, artworkIndex) => (
