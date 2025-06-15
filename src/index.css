@@ -112,8 +112,6 @@
     max-width: 320px;
     margin: 0 auto;
     display: block;
-    position: relative;
-    overflow: hidden;
   }
 
   @media (min-width: 640px) {
@@ -140,75 +138,5 @@
   .masonry-item {
     display: inline-block;
     width: 100%;
-  }
-
-  .masonry-column {
-    break-inside: avoid;
-    position: relative;
-  }
-
-  /* Infinite scrolling animations */
-  @keyframes scroll-down {
-    0% {
-      transform: translateY(-100%);
-      opacity: 0;
-    }
-    10% {
-      opacity: 1;
-    }
-    90% {
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(100vh);
-      opacity: 0;
-    }
-  }
-
-  @keyframes scroll-up {
-    0% {
-      transform: translateY(100vh);
-      opacity: 0;
-    }
-    10% {
-      opacity: 1;
-    }
-    90% {
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(-100%);
-      opacity: 0;
-    }
-  }
-
-  .scroll-down .masonry-item {
-    animation: scroll-down 20s linear infinite;
-  }
-
-  .scroll-up .masonry-item {
-    animation: scroll-up 20s linear infinite;
-  }
-
-  /* White fade overlay for top and bottom */
-  .masonry-grid::before,
-  .masonry-grid::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 100px;
-    background: linear-gradient(to bottom, rgba(248, 250, 252, 1) 0%, rgba(248, 250, 252, 0) 100%);
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  .masonry-grid::before {
-    top: 0;
-  }
-
-  .masonry-grid::after {
-    bottom: 0;
-    background: linear-gradient(to top, rgba(248, 250, 252, 1) 0%, rgba(248, 250, 252, 0) 100%);
   }
 }
