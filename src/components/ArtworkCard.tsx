@@ -16,27 +16,23 @@ interface ArtworkCardProps {
 }
 
 const ArtworkCard = ({ artwork, onClick }: ArtworkCardProps) => {
-  const itemVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 30,
-      scale: 0.95
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  };
-
   return (
     <motion.div 
       className="masonry-item group relative cursor-pointer mb-4 break-inside-avoid"
-      variants={itemVariants}
+      initial={{ 
+        opacity: 0, 
+        y: 30,
+        scale: 0.95
+      }}
+      animate={{ 
+        opacity: 1, 
+        y: 0,
+        scale: 1
+      }}
+      transition={{
+        duration: 0.6,
+        ease: "easeOut"
+      }}
       whileHover={{ 
         scale: 1.02,
         transition: { duration: 0.2 }

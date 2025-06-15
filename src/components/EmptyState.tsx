@@ -6,17 +6,6 @@ interface EmptyStateProps {
 }
 
 const EmptyState = ({ searchQuery }: EmptyStateProps) => {
-  const emojiVariants = {
-    bounce: {
-      y: [0, -8, 0],
-      transition: {
-        duration: 0.6,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  };
-
   const searchEmojis = ['🌸', '💖', '🎀'];
   const emptyEmojis = ['🌺', '💕', '🌷'];
   
@@ -36,9 +25,15 @@ const EmptyState = ({ searchQuery }: EmptyStateProps) => {
         {emojis.map((emoji, index) => (
           <motion.span
             key={index}
-            variants={emojiVariants}
-            animate="bounce"
-            transition={{ delay: index * 0.2 }}
+            animate={{
+              y: [0, -8, 0],
+            }}
+            transition={{
+              duration: 1.2,
+              repeat: Infinity,
+              delay: index * 0.4,
+              ease: "easeInOut"
+            }}
           >
             {emoji}
           </motion.span>
