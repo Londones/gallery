@@ -67,7 +67,6 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
         <div className="text-center py-16">
-          <p className="text-gray-500">Loading gallery...</p>
         </div>
       </div>
     );
