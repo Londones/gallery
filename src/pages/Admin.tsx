@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, Save, Trash2, Eye, ExternalLink, LogOut, Edit2 } from 'lucide-react';
@@ -10,6 +9,13 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  validateArtworkTitle, 
+  validateArtworkDescription, 
+  validatePlatformLink, 
+  validateImageFile,
+  sanitizeText 
+} from '@/utils/inputValidation';
 
 interface Artwork {
   id: string;
@@ -59,7 +65,7 @@ const Admin = () => {
       console.error('Error fetching artworks:', error);
       toast({
         title: "Error",
-        description: "Failed to load artworks.",
+        description: "Failed to load artworks. Please try again.",
         variant: "destructive"
       });
     }
@@ -68,6 +74,16 @@ const Admin = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate the image file
+      const validation = validateImageFile(file);
+      if (!validation.isValid) {
+        toast({
+          title: "Invalid File",
+          description: validation.error,
+          variant: "destructive"
+        });
+        return;
+      }
       setFormData(prev => ({ ...prev, imageFile: file }));
     }
   };
@@ -88,23 +104,65 @@ const Admin = () => {
     return publicUrl;
   };
 
+  const validateForm = () => {
+    // Validate title
+    const titleValidation = validateArtworkTitle(formData.title);
+    if (!titleValidation.isValid) {
+      toast({
+        title: "Invalid Title",
+        description: titleValidation.error,
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Validate description
+    const descriptionValidation = validateArtworkDescription(formData.description);
+    if (!descriptionValidation.isValid) {
+      toast({
+        title: "Invalid Description",
+        description: descriptionValidation.error,
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Validate platform link
+    const platformValidation = validatePlatformLink(formData.platformLink);
+    if (!platformValidation.isValid) {
+      toast({
+        title: "Invalid Platform Link",
+        description: platformValidation.error,
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Validate image for new artwork
+    if (!editingArtwork && !formData.imageFile) {
+      toast({
+        title: "Image Required",
+        description: "Please select an image file.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingArtwork) {
-      // Update existing artwork
-      if (!formData.title.trim()) {
-        toast({
-          title: "Error",
-          description: "Please provide a title.",
-          variant: "destructive"
-        });
-        return;
-      }
+    if (!validateForm()) {
+      return;
+    }
 
-      setIsUploading(true);
+    setIsUploading(true);
 
-      try {
+    try {
+      if (editingArtwork) {
+        // Update existing artwork
         let imageUrl = editingArtwork.image_url;
         
         // Upload new image if provided
@@ -115,8 +173,8 @@ const Admin = () => {
         const { data, error } = await supabase
           .from('artworks')
           .update({
-            title: formData.title.trim(),
-            description: formData.description.trim() || null,
+            title: sanitizeText(formData.title.trim()),
+            description: formData.description.trim() ? sanitizeText(formData.description.trim()) : null,
             image_url: imageUrl,
             platform_link: formData.platformLink.trim() || null
           })
@@ -136,39 +194,16 @@ const Admin = () => {
           title: "Success!",
           description: "Artwork has been updated."
         });
-      } catch (error: any) {
-        console.error('Update error:', error);
-        toast({
-          title: "Error",
-          description: error.message || "Failed to update artwork. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsUploading(false);
-      }
-    } else {
-      // Create new artwork
-      if (!formData.imageFile || !formData.title.trim()) {
-        toast({
-          title: "Error",
-          description: "Please provide both a title and an image.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setIsUploading(true);
-
-      try {
-        // Upload image to Supabase storage
-        const imageUrl = await uploadImageToStorage(formData.imageFile);
+      } else {
+        // Create new artwork
+        const imageUrl = await uploadImageToStorage(formData.imageFile!);
 
         // Insert artwork record
         const { data, error } = await supabase
           .from('artworks')
           .insert({
-            title: formData.title.trim(),
-            description: formData.description.trim() || null,
+            title: sanitizeText(formData.title.trim()),
+            description: formData.description.trim() ? sanitizeText(formData.description.trim()) : null,
             image_url: imageUrl,
             platform_link: formData.platformLink.trim() || null
           })
@@ -187,16 +222,28 @@ const Admin = () => {
           title: "Success!",
           description: "Artwork has been added to your gallery."
         });
-      } catch (error: any) {
-        console.error('Upload error:', error);
-        toast({
-          title: "Error",
-          description: error.message || "Failed to upload artwork. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsUploading(false);
       }
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      
+      // Provide user-friendly error messages without exposing sensitive info
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      
+      if (error.message?.includes('storage')) {
+        errorMessage = "Failed to upload image. Please check your file and try again.";
+      } else if (error.message?.includes('duplicate')) {
+        errorMessage = "An artwork with this information already exists.";
+      } else if (error.message?.includes('network')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+      }
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -261,7 +308,7 @@ const Admin = () => {
       console.error('Delete error:', error);
       toast({
         title: "Error",
-        description: "Failed to delete artwork.",
+        description: "Failed to delete artwork. Please try again.",
         variant: "destructive"
       });
     }
@@ -347,7 +394,7 @@ const Admin = () => {
                     <input
                       id="image"
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
                       onChange={handleImageUpload}
                       className="hidden"
                     />
@@ -357,26 +404,30 @@ const Admin = () => {
                         {formData.imageFile ? formData.imageFile.name : 
                          editingArtwork ? 'Click to replace image (optional)' : 'Click to upload image'}
                       </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        JPEG, PNG, WebP, GIF • Max 5MB
+                      </p>
                     </label>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="title" className="text-gray-800">
-                    Title *
+                    Title * <span className="text-xs text-gray-500">(Max 100 characters)</span>
                   </Label>
                   <Input
                     id="title"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Enter artwork title"
+                    maxLength={100}
                     className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="description" className="text-gray-800">
-                    Description
+                    Description <span className="text-xs text-gray-500">(Max 1000 characters)</span>
                   </Label>
                   <Textarea
                     id="description"
@@ -384,6 +435,7 @@ const Admin = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Describe your artwork..."
                     rows={4}
+                    maxLength={1000}
                     className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
                   />
                 </div>
@@ -400,6 +452,9 @@ const Admin = () => {
                     placeholder="https://instagram.com/p/..."
                     className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
                   />
+                  <p className="text-xs text-gray-500">
+                    Supported: Instagram, Twitter/X, ArtStation, DeviantArt, Behance, Dribbble
+                  </p>
                 </div>
 
                 <div className="flex space-x-3">
