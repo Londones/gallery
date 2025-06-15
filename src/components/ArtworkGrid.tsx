@@ -17,32 +17,51 @@ interface ArtworkGridProps {
 }
 
 const ArtworkGrid = ({ artworks, onArtworkClick }: ArtworkGridProps) => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+  // Duplicate artworks to ensure infinite scroll
+  const duplicatedArtworks = [...artworks, ...artworks, ...artworks];
+  
+  // Split artworks into columns based on current breakpoint
+  const getColumnsCount = () => {
+    if (typeof window === 'undefined') return 1;
+    if (window.innerWidth >= 1280) return 4;
+    if (window.innerWidth >= 1024) return 3;
+    if (window.innerWidth >= 640) return 2;
+    return 1;
   };
 
+  const columnsCount = getColumnsCount();
+  const columns: Artwork[][] = Array.from({ length: columnsCount }, () => []);
+  
+  // Distribute artworks across columns
+  duplicatedArtworks.forEach((artwork, index) => {
+    columns[index % columnsCount].push(artwork);
+  });
+
   return (
-    <motion.div 
-      className="masonry-grid"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {artworks.map((artwork) => (
-        <ArtworkCard 
-          key={artwork.id}
-          artwork={artwork}
-          onClick={onArtworkClick}
-        />
+    <div className="flex gap-4 justify-center max-w-7xl mx-auto overflow-hidden h-screen">
+      {columns.map((columnArtworks, columnIndex) => (
+        <motion.div
+          key={columnIndex}
+          className="flex flex-col gap-4 flex-1 max-w-80"
+          animate={{
+            y: columnIndex % 2 === 0 ? [0, -2000] : [0, 2000]
+          }}
+          transition={{
+            duration: 60,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        >
+          {columnArtworks.map((artwork, artworkIndex) => (
+            <ArtworkCard 
+              key={`${artwork.id}-${artworkIndex}`}
+              artwork={artwork}
+              onClick={onArtworkClick}
+            />
+          ))}
+        </motion.div>
       ))}
-    </motion.div>
+    </div>
   );
 };
 
