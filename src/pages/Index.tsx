@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import ImagePreview from '@/components/ImagePreview';
 import SearchButton from '@/components/SearchButton';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import EmptyState from '@/components/EmptyState';
+import ArtworkGrid from '@/components/ArtworkGrid';
 
 interface Artwork {
   id: string;
@@ -64,57 +67,8 @@ const Index = () => {
     navigate(`/artwork/${artworkId}`);
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 30,
-      scale: 0.95
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  };
-
-  const emojiVariants = {
-    bounce: {
-      y: [0, -20, 0],
-      transition: {
-        duration: 0.6,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }
-    }
-  };
-
   if (isLoading) {
-    return (
-      <motion.div 
-        className="min-h-screen bg-white flex items-center justify-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        {/* Removed loading message */}
-      </motion.div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -127,96 +81,13 @@ const Index = () => {
     >
       {/* Main Content */}
       <main className="w-full px-4 py-8 text-center">
-        {filteredArtworks.length === 0 && searchQuery ? (
-          <motion.div 
-            className="text-center py-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex justify-center items-center space-x-2 text-4xl">
-              {['🎨', '✨', '🖼️', '💫', '🌸'].map((emoji, index) => (
-                <motion.span
-                  key={index}
-                  variants={emojiVariants}
-                  animate="bounce"
-                  transition={{ delay: index * 0.1 }}
-                >
-                  {emoji}
-                </motion.span>
-              ))}
-            </div>
-            <p className="text-gray-400 mt-4 text-sm">No artworks found matching "{searchQuery}"</p>
-          </motion.div>
-        ) : filteredArtworks.length === 0 ? (
-          <motion.div 
-            className="text-center py-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex justify-center items-center space-x-2 text-4xl">
-              {['🎭', '🌈', '🎪', '🦋', '🌺'].map((emoji, index) => (
-                <motion.span
-                  key={index}
-                  variants={emojiVariants}
-                  animate="bounce"
-                  transition={{ delay: index * 0.15 }}
-                >
-                  {emoji}
-                </motion.span>
-              ))}
-            </div>
-            <p className="text-gray-400 mt-4 text-sm">Your gallery awaits its first masterpiece</p>
-          </motion.div>
+        {filteredArtworks.length === 0 ? (
+          <EmptyState searchQuery={searchQuery} />
         ) : (
-          <motion.div 
-            className="masonry-grid"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {filteredArtworks.map((artwork) => (
-              <motion.div 
-                key={artwork.id}
-                className="masonry-item group relative cursor-pointer mb-4 break-inside-avoid"
-                variants={itemVariants}
-                whileHover={{ 
-                  scale: 1.02,
-                  transition: { duration: 0.2 }
-                }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleArtworkClick(artwork.id)}
-                layoutId={`artwork-${artwork.id}`}
-              >
-                <motion.img
-                  src={artwork.image_url}
-                  alt={artwork.title}
-                  className="w-full rounded-lg transition-all duration-300"
-                  layoutId={`artwork-image-${artwork.id}`}
-                  onError={(e) => {
-                    console.error('Image failed to load:', artwork.image_url);
-                    console.error('Error:', e);
-                  }}
-                  onLoad={() => console.log('Image loaded successfully:', artwork.image_url)}
-                />
-                <motion.div 
-                  className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-300 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                >
-                  <div className="text-center text-white p-6 max-w-full">
-                    <h3 className="text-xl font-medium mb-2 text-white">
-                      {artwork.title}
-                    </h3>
-                    <p className="text-sm text-white/90 leading-relaxed">
-                      {artwork.description}
-                    </p>
-                  </div>
-                </motion.div>
-              </motion.div>
-            ))}
-          </motion.div>
+          <ArtworkGrid 
+            artworks={filteredArtworks}
+            onArtworkClick={handleArtworkClick}
+          />
         )}
       </main>
 
