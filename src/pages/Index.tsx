@@ -16,6 +16,7 @@ interface Artwork {
 
 const Index = () => {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
   const navigate = useNavigate();
 
@@ -38,6 +39,9 @@ const Index = () => {
       console.log('No localStorage data, using sample data');
       setArtworks(sampleArtworks);
     }
+    
+    // Set loading to false after artworks are set
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -58,7 +62,7 @@ const Index = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.3
+        delayChildren: 0.2
       }
     }
   };
@@ -66,7 +70,7 @@ const Index = () => {
   const itemVariants = {
     hidden: { 
       opacity: 0, 
-      y: 20,
+      y: 30,
       scale: 0.95
     },
     visible: { 
@@ -89,7 +93,7 @@ const Index = () => {
     >
       {/* Main Content */}
       <main className="w-full px-4 py-8 text-center">
-        {artworks.length === 0 ? (
+        {isLoading || artworks.length === 0 ? (
           <motion.div 
             className="text-center py-16"
             initial={{ opacity: 0, y: 20 }}
