@@ -1,23 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Upload, Save, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { 
-  validateArtworkTitle, 
-  validateArtworkDescription, 
-  validatePlatformLink, 
+import { useState, useEffect } from "react";
+import { Upload, Save, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  validateArtworkTitle,
+  validateArtworkDescription,
+  validatePlatformLink,
   validateImageFile,
-  sanitizeText 
-} from '@/utils/inputValidation';
+  sanitizeText,
+} from "@/utils/inputValidation";
 
 interface Artwork {
   id: string;
-  title: string;  
+  title: string;
   description: string;
   image_url: string;
   platform_link?: string;
@@ -30,16 +30,20 @@ interface ArtworkFormProps {
   onEditingCancelled: () => void;
 }
 
-const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: ArtworkFormProps) => {
+const ArtworkForm = ({
+  editingArtwork,
+  onArtworkSaved,
+  onEditingCancelled,
+}: ArtworkFormProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(
     editingArtwork ? editingArtwork.image_url : null
   );
   const [formData, setFormData] = useState({
-    title: editingArtwork?.title || '',
-    description: editingArtwork?.description || '',
-    platformLink: editingArtwork?.platform_link || '',
-    imageFile: null as File | null
+    title: editingArtwork?.title || "",
+    description: editingArtwork?.description || "",
+    platformLink: editingArtwork?.platform_link || "",
+    imageFile: null as File | null,
   });
   const { toast } = useToast();
 
@@ -48,17 +52,17 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
     if (editingArtwork) {
       setFormData({
         title: editingArtwork.title,
-        description: editingArtwork.description || '',
-        platformLink: editingArtwork.platform_link || '',
-        imageFile: null
+        description: editingArtwork.description || "",
+        platformLink: editingArtwork.platform_link || "",
+        imageFile: null,
       });
       setImagePreview(editingArtwork.image_url);
     } else {
       setFormData({
-        title: '',
-        description: '',
-        platformLink: '',
-        imageFile: null
+        title: "",
+        description: "",
+        platformLink: "",
+        imageFile: null,
       });
       setImagePreview(null);
     }
@@ -72,29 +76,29 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
         toast({
           title: "Invalid File",
           description: validation.error,
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       }
-      
+
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
-      setFormData(prev => ({ ...prev, imageFile: file }));
+      setFormData((prev) => ({ ...prev, imageFile: file }));
     }
   };
 
   const uploadImageToStorage = async (file: File): Promise<string> => {
     const fileName = `${Date.now()}-${file.name}`;
-    
+
     const { data, error } = await supabase.storage
-      .from('artworks')
+      .from("artworks")
       .upload(fileName, file);
 
     if (error) throw error;
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('artworks')
-      .getPublicUrl(fileName);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("artworks").getPublicUrl(fileName);
 
     return publicUrl;
   };
@@ -105,17 +109,19 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
       toast({
         title: "Invalid Title",
         description: titleValidation.error,
-        variant: "destructive"
+        variant: "destructive",
       });
       return false;
     }
 
-    const descriptionValidation = validateArtworkDescription(formData.description);
+    const descriptionValidation = validateArtworkDescription(
+      formData.description
+    );
     if (!descriptionValidation.isValid) {
       toast({
         title: "Invalid Description",
         description: descriptionValidation.error,
-        variant: "destructive"
+        variant: "destructive",
       });
       return false;
     }
@@ -125,7 +131,7 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
       toast({
         title: "Invalid Platform Link",
         description: platformValidation.error,
-        variant: "destructive"
+        variant: "destructive",
       });
       return false;
     }
@@ -134,7 +140,7 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
       toast({
         title: "Image Required",
         description: "Please select an image file.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return false;
     }
@@ -144,7 +150,7 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -154,20 +160,22 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
     try {
       if (editingArtwork) {
         let imageUrl = editingArtwork.image_url;
-        
+
         if (formData.imageFile) {
           imageUrl = await uploadImageToStorage(formData.imageFile);
         }
 
         const { data, error } = await supabase
-          .from('artworks')
+          .from("artworks")
           .update({
             title: sanitizeText(formData.title.trim()),
-            description: formData.description.trim() ? sanitizeText(formData.description.trim()) : null,
+            description: formData.description.trim()
+              ? sanitizeText(formData.description.trim())
+              : null,
             image_url: imageUrl,
-            platform_link: formData.platformLink.trim() || null
+            platform_link: formData.platformLink.trim() || null,
           })
-          .eq('id', editingArtwork.id)
+          .eq("id", editingArtwork.id)
           .select()
           .single();
 
@@ -178,18 +186,20 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
 
         toast({
           title: "Success!",
-          description: "Artwork has been updated."
+          description: "Artwork has been updated.",
         });
       } else {
         const imageUrl = await uploadImageToStorage(formData.imageFile!);
 
         const { data, error } = await supabase
-          .from('artworks')
+          .from("artworks")
           .insert({
             title: sanitizeText(formData.title.trim()),
-            description: formData.description.trim() ? sanitizeText(formData.description.trim()) : null,
+            description: formData.description.trim()
+              ? sanitizeText(formData.description.trim())
+              : null,
             image_url: imageUrl,
-            platform_link: formData.platformLink.trim() || null
+            platform_link: formData.platformLink.trim() || null,
           })
           .select()
           .single();
@@ -201,26 +211,28 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
 
         toast({
           title: "Success!",
-          description: "Artwork has been added to your gallery."
+          description: "Artwork has been added to your gallery.",
         });
       }
     } catch (error: any) {
-      console.error('Upload error:', error);
-      
+      console.error("Upload error:", error);
+
       let errorMessage = "An unexpected error occurred. Please try again.";
-      
-      if (error.message?.includes('storage')) {
-        errorMessage = "Failed to upload image. Please check your file and try again.";
-      } else if (error.message?.includes('duplicate')) {
+
+      if (error.message?.includes("storage")) {
+        errorMessage =
+          "Failed to upload image. Please check your file and try again.";
+      } else if (error.message?.includes("duplicate")) {
         errorMessage = "An artwork with this information already exists.";
-      } else if (error.message?.includes('network')) {
-        errorMessage = "Network error. Please check your connection and try again.";
+      } else if (error.message?.includes("network")) {
+        errorMessage =
+          "Network error. Please check your connection and try again.";
       }
-      
+
       toast({
         title: "Error",
         description: errorMessage,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsUploading(false);
@@ -229,20 +241,20 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
 
   const resetForm = () => {
     setFormData({
-      title: '',
-      description: '',
-      platformLink: '',
-      imageFile: null
+      title: "",
+      description: "",
+      platformLink: "",
+      imageFile: null,
     });
-    
-    if (imagePreview && imagePreview.startsWith('blob:')) {
+
+    if (imagePreview && imagePreview.startsWith("blob:")) {
       URL.revokeObjectURL(imagePreview);
     }
     setImagePreview(null);
 
-    const fileInput = document.getElementById('image') as HTMLInputElement;
+    const fileInput = document.getElementById("image") as HTMLInputElement;
     if (fileInput) {
-      fileInput.value = '';
+      fileInput.value = "";
     }
 
     onEditingCancelled();
@@ -256,14 +268,14 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
     <Card className="bg-white/70 backdrop-blur-sm border-gray-100">
       <CardHeader>
         <CardTitle className="text-gray-900 font-light text-xl">
-          {editingArtwork ? 'Edit Artwork' : 'Add New Artwork'}
+          {editingArtwork ? "Edit Artwork" : "Add New Artwork"}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="image" className="text-gray-800">
-              Artwork Image {!editingArtwork && '*'}
+              Artwork Image {!editingArtwork && "*"}
             </Label>
             <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-pink-200 transition-colors relative">
               <input
@@ -273,7 +285,7 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
                 onChange={handleImageUpload}
                 className="hidden"
               />
-              
+
               {imagePreview ? (
                 <div className="relative">
                   <img
@@ -286,19 +298,24 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      if (imagePreview && imagePreview.startsWith('blob:')) {
+                      if (imagePreview && imagePreview.startsWith("blob:")) {
                         URL.revokeObjectURL(imagePreview);
                       }
                       setImagePreview(null);
-                      setFormData(prev => ({ ...prev, imageFile: null }));
-                      const fileInput = document.getElementById('image') as HTMLInputElement;
-                      if (fileInput) fileInput.value = '';
+                      setFormData((prev) => ({ ...prev, imageFile: null }));
+                      const fileInput = document.getElementById(
+                        "image"
+                      ) as HTMLInputElement;
+                      if (fileInput) fileInput.value = "";
                     }}
                     className="absolute top-2 right-2 bg-white/80 hover:bg-white text-gray-600 rounded-full p-1"
                   >
                     <X className="w-4 h-4" />
                   </Button>
-                  <label htmlFor="image" className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/0 hover:bg-black/10 transition-colors rounded-lg">
+                  <label
+                    htmlFor="image"
+                    className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/0 hover:bg-black/10 transition-colors rounded-lg"
+                  >
                     <span className="text-white bg-black/50 px-3 py-1 rounded-full text-sm opacity-0 hover:opacity-100 transition-opacity">
                       Change Image
                     </span>
@@ -307,11 +324,9 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
               ) : (
                 <label htmlFor="image" className="cursor-pointer">
                   <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                  <p className="text-gray-600">
-                    Click to upload image
-                  </p>
+                  <p className="text-gray-600">Click to upload image</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    JPEG, PNG, WebP, GIF • Max 5MB
+                    JPEG, PNG, WebP, GIF • Max 50MB
                   </p>
                 </label>
               )}
@@ -320,12 +335,17 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
 
           <div className="space-y-2">
             <Label htmlFor="title" className="text-gray-800">
-              Title * <span className="text-xs text-gray-500">(Max 100 characters)</span>
+              Title *{" "}
+              <span className="text-xs text-gray-500">
+                (Max 100 characters)
+              </span>
             </Label>
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, title: e.target.value }))
+              }
               placeholder="Enter artwork title"
               maxLength={100}
               className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
@@ -334,12 +354,20 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
 
           <div className="space-y-2">
             <Label htmlFor="description" className="text-gray-800">
-              Description <span className="text-xs text-gray-500">(Max 1000 characters)</span>
+              Description{" "}
+              <span className="text-xs text-gray-500">
+                (Max 1000 characters)
+              </span>
             </Label>
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               placeholder="Describe your artwork..."
               rows={4}
               maxLength={1000}
@@ -355,18 +383,24 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
               id="platform"
               type="url"
               value={formData.platformLink}
-              onChange={(e) => setFormData(prev => ({ ...prev, platformLink: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  platformLink: e.target.value,
+                }))
+              }
               placeholder="https://instagram.com/p/..."
               className="border-gray-200 focus:border-pink-300 focus:ring-pink-200"
             />
             <p className="text-xs text-gray-500">
-              Supported: Instagram, Twitter/X, ArtStation, DeviantArt, Behance, Dribbble
+              Supported: Instagram, Twitter/X, ArtStation, DeviantArt, Behance,
+              Dribbble
             </p>
           </div>
 
           <div className="flex space-x-3">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isUploading}
               className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
             >
@@ -375,14 +409,14 @@ const ArtworkForm = ({ editingArtwork, onArtworkSaved, onEditingCancelled }: Art
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  {editingArtwork ? 'Update Artwork' : 'Add Artwork'}
+                  {editingArtwork ? "Update Artwork" : "Add Artwork"}
                 </>
               )}
             </Button>
-            
+
             {editingArtwork && (
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 onClick={cancelEditing}
                 className="border-gray-200 text-gray-700 hover:bg-gray-50"
