@@ -12,7 +12,6 @@ import {
   validateArtworkDescription,
   validatePlatformLink,
   validateImageFile,
-  sanitizeText,
 } from "@/utils/inputValidation";
 
 interface Artwork {
@@ -168,9 +167,9 @@ const ArtworkForm = ({
         const { data, error } = await supabase
           .from("artworks")
           .update({
-            title: sanitizeText(formData.title.trim()),
+            title: formData.title.trim(),
             description: formData.description.trim()
-              ? sanitizeText(formData.description.trim())
+              ? formData.description.trim()
               : null,
             image_url: imageUrl,
             platform_link: formData.platformLink.trim() || null,
@@ -194,9 +193,9 @@ const ArtworkForm = ({
         const { data, error } = await supabase
           .from("artworks")
           .insert({
-            title: sanitizeText(formData.title.trim()),
+            title: formData.title.trim(),
             description: formData.description.trim()
-              ? sanitizeText(formData.description.trim())
+              ? formData.description.trim()
               : null,
             image_url: imageUrl,
             platform_link: formData.platformLink.trim() || null,
