@@ -15,6 +15,7 @@ interface Artwork {
   image_url: string;
   platform_link?: string;
   created_at: string;
+  user_id: string;
 }
 
 const Admin = () => {
@@ -41,10 +42,13 @@ const Admin = () => {
   }, [user]);
 
   const fetchArtworks = async () => {
+    if (!user) return;
+    
     try {
       const { data, error } = await supabase
         .from('artworks')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

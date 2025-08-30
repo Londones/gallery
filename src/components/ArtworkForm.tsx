@@ -21,6 +21,7 @@ interface Artwork {
   image_url: string;
   platform_link?: string;
   created_at: string;
+  user_id: string;
 }
 
 interface ArtworkFormProps {
@@ -199,6 +200,7 @@ const ArtworkForm = ({
               : null,
             image_url: imageUrl,
             platform_link: formData.platformLink.trim() || null,
+            user_id: (await supabase.auth.getUser()).data.user?.id,
           })
           .select()
           .single();

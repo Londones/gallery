@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Eye, LogOut } from 'lucide-react';
+import { ArrowLeft, Eye, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AdminHeaderProps {
@@ -24,6 +24,12 @@ const AdminHeader = ({ onSignOut }: AdminHeaderProps) => {
             </h1>
           </div>
           <div className="flex items-center space-x-2">
+            <Link to="/profile">
+              <Button variant="outline" size="sm" className="border-gray-200 text-gray-700 hover:bg-gray-50">
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </Button>
+            </Link>
             <Link to="/">
               <Button variant="outline" size="sm" className="border-gray-200 text-gray-700 hover:bg-gray-50">
                 <Eye className="w-4 h-4 mr-2" />
